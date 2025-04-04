@@ -1,8 +1,12 @@
 package net.rpcsx.ui.navigation
 
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.content.Intent
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -298,7 +302,18 @@ fun GamesDestination(
                         selected = false,
                         icon = { Icon(Icons.Outlined.Info, contentDescription = null) },
                         onClick = {
-                            AlertDialogQueue.showDialog("System Info", RPCSX.instance.systemInfo())
+                            AlertDialogQueue.showDialog(
+                                "System Info", 
+                                RPCSX.instance.systemInfo(), 
+                                confirmText = "Copy", 
+                                dismissText = "Cancel", 
+                                onConfirm = { 
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("System Info", RPCSX.instance.systemInfo())
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "Copied to clipboard!", Toast.LENGTH_SHORT).show()
+                                }
+                            )
                         }
                     )
                 }
