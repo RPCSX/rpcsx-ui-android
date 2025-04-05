@@ -86,7 +86,7 @@ fun AdvancedSettingsScreen(
             .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
             .then(modifier),
         topBar = {
-            val titlePath = path.replace("@@", " / ")
+            val titlePath = path.replace("@@", " / ").removePrefix(" / ")
             LargeTopAppBar(
                 title = {
                     if (isSearching) {
