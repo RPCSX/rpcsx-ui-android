@@ -1,7 +1,5 @@
 package net.rpcsx.overlay
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -10,6 +8,7 @@ import android.view.MotionEvent
 import androidx.core.content.edit
 import androidx.core.graphics.drawable.toDrawable
 import kotlin.math.roundToInt
+import net.rpcsx.utils.GeneralSettings
 
 private enum class DpadButton(val bit: Int) {
     Top(1 shl 0), Left(1 shl 1), Right(1 shl 2), Bottom(1 shl 3);
@@ -30,7 +29,6 @@ private class DpadState(var mask: Int = 0) {
 }
 
 class PadOverlayDpad(
-    private val context: Context,
     resources: Resources,
     private var buttonWidth: Int,
     private var buttonHeight: Int,
@@ -54,11 +52,6 @@ class PadOverlayDpad(
     private val locked = arrayOf(-1, -1)
     private val btnState = arrayOf(DpadState(), DpadState())
     private val digitalBits = arrayOf(0, 0)
-    private val prefs: SharedPreferences by lazy {
-        context.getSharedPreferences(
-            "PadOverlayPrefs", Context.MODE_PRIVATE
-        )
-    }
     private var offsetX = 0
     private var offsetY = 0
 
@@ -69,10 +62,10 @@ class PadOverlayDpad(
     var idleAlpha: Int = 255
     var dragging: Boolean = false
 
-    var enabled: Boolean = prefs.getBoolean("${inputId}_enabled", true)
+    var enabled: Boolean = GeneralSettings["${inputId}_enabled"] as Boolean? ?: true
         set(value) {
             field = value
-            prefs.edit { putBoolean("${inputId}_enabled", value) }
+            GeneralSettings.setValue("${inputId}_enabled", value)
         }
 
     init {
@@ -97,11 +90,9 @@ class PadOverlayDpad(
 
         area.set(newLeft, newTop, newRight, newBottom)
         updateBounds()
-
-        prefs.edit {
-            putInt("${inputId}_x", area.left)
-            putInt("${inputId}_y", area.top)
-        }
+        
+        GeneralSettings.setValue("${inputId}_x", area.left)
+        GeneralSettings.setValue("${inputId}_y", area.top)
     }
 
     fun stopDragging() {
@@ -126,22 +117,21 @@ class PadOverlayDpad(
         buttonHeight = newHeight / 2 - newHeight / 20
         updateBounds()
 
-        prefs.edit {
-            putInt("${inputId}_x", area.left).putInt("${inputId}_y", area.top)
-                .putInt("${inputId}_scale", percent)
-        }
+        GeneralSettings.setValue("${inputId}_x", area.left)
+        GeneralSettings.setValue("${inputId}_y", area.top)
+        GeneralSettings.setValue("${inputId}_scale", percent)
     }
 
     fun setOpacity(percent: Int) {
         idleAlpha = (255 * percent / 100).coerceIn(0, 255)
-        prefs.edit { putInt("${inputId}_opacity", percent) }
+        GeneralSettings.setValue("${inputId}_opacity", percent)
     }
 
     fun resetConfigs() {
-        prefs.edit {
-            remove("${inputId}_x").remove("${inputId}_y").remove("${inputId}_scale")
-                .remove("${inputId}_opacity")
-        }
+        GeneralSettings.setValue("${inputId}_x", null)
+        GeneralSettings.setValue("${inputId}_y", null)
+        GeneralSettings.setValue("${inputId}_scale", null)
+        GeneralSettings.setValue("${inputId}_opacity", null)
         area = Rect(defaultArea)
         setOpacity(50)
         buttonWidth = defaultButtonWidth
@@ -150,9 +140,9 @@ class PadOverlayDpad(
     }
 
     private fun loadSavedPosition() {
-        val x = prefs.getInt("${inputId}_x", area.left)
-        val y = prefs.getInt("${inputId}_y", area.top)
-        val scale = prefs.getInt("${inputId}_scale", -1)
+        val x = GeneralSettings["${inputId}_x"] as Int? ?: area.left
+        val y = GeneralSettings["${inputId}_y"] as Int? ?: area.top
+        val scale = GeneralSettings["${inputId}_scale"] as Int? ?: -1
         updatePosition(x, y, force = true)
         if (scale != -1) setScale(scale)
     }
@@ -165,10 +155,9 @@ class PadOverlayDpad(
 
     fun getInfo(): Triple<String, Int, Int> {
         return Triple(
-            "Dpad",
-            prefs.getInt("${inputId}_scale", measureDefaultScale()),
-            prefs.getInt("${inputId}_opacity", 50)
-        )
+            "Dpad", 
+            GeneralSettings["${inputId}_scale"] as Int? ?: measureDefaultScale(), 
+            GeneralSettings["${inputId}_opacity"] as Int? ?: 50)
     }
 
     private fun updateBounds() {

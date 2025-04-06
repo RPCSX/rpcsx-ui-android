@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
@@ -12,6 +13,8 @@ import kotlinx.coroutines.launch
 import net.rpcsx.ui.navigation.AppNavHost
 import net.rpcsx.utils.GitHub
 import java.io.File
+import net.rpcsx.utils.InputBindingPrefs
+import net.rpcsx.utils.GeneralSettings
 import kotlin.concurrent.thread
 
 private const val ACTION_USB_PERMISSION = "net.rpcsx.USB_PERMISSION"
@@ -22,6 +25,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        GeneralSettings.init(this)
 
         RPCSX.rootDirectory = applicationContext.getExternalFilesDir(null).toString()
         if (!RPCSX.rootDirectory.endsWith("/")) {

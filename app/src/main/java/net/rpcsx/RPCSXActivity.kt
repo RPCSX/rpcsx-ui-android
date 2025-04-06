@@ -17,6 +17,7 @@ import androidx.core.view.updateLayoutParams
 import net.rpcsx.databinding.ActivityRpcs3Binding
 import net.rpcsx.dialogs.AlertDialogQueue
 import net.rpcsx.overlay.State
+import net.rpcsx.utils.InputBindingPrefs
 import kotlin.concurrent.thread
 import kotlin.math.abs
 
@@ -27,6 +28,7 @@ class RPCSXActivity : Activity() {
     private var usesAxisL2 = false
     private var usesAxisR2 = false
     private var bootThread: Thread? = null
+    private val inputBindings by lazy { InputBindingPrefs.loadBindings() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,34 +89,17 @@ class RPCSXActivity : Activity() {
 
 
     private fun keyCodeToPadBit(keyCode: Int): Pair<Int, Int> {
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> return Pair(Digital1Flags.CELL_PAD_CTRL_UP.bit, 0)
-            KeyEvent.KEYCODE_DPAD_DOWN -> return Pair(Digital1Flags.CELL_PAD_CTRL_DOWN.bit, 0)
-            KeyEvent.KEYCODE_DPAD_LEFT -> return Pair(Digital1Flags.CELL_PAD_CTRL_LEFT.bit, 0)
-            KeyEvent.KEYCODE_DPAD_RIGHT -> return Pair(Digital1Flags.CELL_PAD_CTRL_RIGHT.bit, 0)
-            KeyEvent.KEYCODE_BUTTON_A -> return Pair(Digital2Flags.CELL_PAD_CTRL_CROSS.bit, 1)
-            KeyEvent.KEYCODE_BUTTON_B -> return Pair(Digital2Flags.CELL_PAD_CTRL_CIRCLE.bit, 1)
-            KeyEvent.KEYCODE_BUTTON_X -> return Pair(Digital2Flags.CELL_PAD_CTRL_SQUARE.bit, 1)
-            KeyEvent.KEYCODE_BUTTON_Y -> return Pair(Digital2Flags.CELL_PAD_CTRL_TRIANGLE.bit, 1)
-            KeyEvent.KEYCODE_BUTTON_L1 -> return Pair(Digital2Flags.CELL_PAD_CTRL_L1.bit, 1)
-            KeyEvent.KEYCODE_BUTTON_R1 -> return Pair(Digital2Flags.CELL_PAD_CTRL_R1.bit, 1)
-            KeyEvent.KEYCODE_BUTTON_L2 -> return if (usesAxisL2) Pair(
-                0,
-                0
-            ) else Pair(Digital2Flags.CELL_PAD_CTRL_L2.bit, 1)
-
-            KeyEvent.KEYCODE_BUTTON_R2 -> return if (usesAxisR2) Pair(
-                0,
-                0
-            ) else Pair(Digital2Flags.CELL_PAD_CTRL_R2.bit, 1)
-
-            KeyEvent.KEYCODE_BUTTON_START -> return Pair(Digital1Flags.CELL_PAD_CTRL_START.bit, 0)
-            KeyEvent.KEYCODE_BUTTON_SELECT -> return Pair(Digital1Flags.CELL_PAD_CTRL_SELECT.bit, 0)
-            KeyEvent.KEYCODE_BUTTON_THUMBL -> return Pair(Digital1Flags.CELL_PAD_CTRL_L3.bit, 0)
-            KeyEvent.KEYCODE_BUTTON_THUMBR -> return Pair(Digital1Flags.CELL_PAD_CTRL_R3.bit, 0)
+        val event = inputBindings[keyCode] ?: Pair(0, 0)
+        
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_R2) {
+            if (usesAxisR2) return Pair(0, 0) else return event
         }
-
-        return Pair(0, 0)
+        
+        if (keyCode == KeyEvent.KEYCODE_BUTTON_L2) {
+            if (usesAxisL2) return Pair(0, 0) else return event
+        }
+        
+        return event
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {

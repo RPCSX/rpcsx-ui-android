@@ -92,6 +92,7 @@ import net.rpcsx.ui.drivers.GpuDriversScreen
 import net.rpcsx.ui.games.GamesScreen
 import net.rpcsx.ui.settings.AdvancedSettingsScreen
 import net.rpcsx.ui.settings.SettingsScreen
+import net.rpcsx.ui.settings.ControllerSettings
 import net.rpcsx.utils.FileUtil
 import org.json.JSONObject
 
@@ -217,6 +218,14 @@ fun AppNavHost() {
             SettingsScreen(
                 navigateBack = navController::navigateUp,
                 navigateTo = navController::navigate,
+            )
+        }
+        
+        composable(
+            route = "controls"
+        ) {
+            ControllerSettings(
+                navigateBack = navController::navigateUp
             )
         }
 

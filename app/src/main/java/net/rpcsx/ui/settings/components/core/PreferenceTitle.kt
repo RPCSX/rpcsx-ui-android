@@ -3,6 +3,8 @@ package net.rpcsx.ui.settings.components.core
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -11,6 +13,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import net.rpcsx.ui.settings.components.LocalPreferenceState
 import net.rpcsx.ui.settings.util.preferenceColor
 import net.rpcsx.ui.settings.util.preferenceSubtitleColor
@@ -31,7 +34,7 @@ internal fun PreferenceTitle(
 ) {
     Text(
         text = title,
-        modifier = modifier,
+        modifier = modifier.animateContentSize(),
         style = style,
         maxLines = maxLines,
         overflow = overflow,
@@ -54,7 +57,7 @@ internal fun PreferenceValue(
 ) {
     Text(
         text = text,
-        modifier = modifier,
+        modifier = modifier.animateContentSize(),
         style = style,
         maxLines = maxLines,
         overflow = overflow,
@@ -74,7 +77,7 @@ internal fun PreferenceTitle(
 ) {
     Text(
         text = title,
-        modifier = modifier,
+        modifier = modifier.animateContentSize(),
         style = style,
         maxLines = maxLines,
         overflow = overflow,
@@ -94,7 +97,7 @@ fun PreferenceSubtitle(
 ) {
     Text(
         text = text,
-        modifier = modifier,
+        modifier = modifier.animateContentSize(),
         style = style,
         maxLines = maxLines,
         overflow = overflow,
@@ -114,10 +117,27 @@ fun PreferenceSubtitle(
 ) {
     Text(
         text = text,
-        modifier = modifier,
+        modifier = modifier.animateContentSize(),
         style = style,
         maxLines = maxLines,
         overflow = overflow,
         color = color,
     )
 }
+
+@Composable
+fun PreferenceHeader(
+    text: String,
+    modifier: Modifier = Modifier,
+    maxLines: Int = 1,
+    style: TextStyle = MaterialTheme.typography.labelLarge,
+    color: Color = MaterialTheme.colorScheme.secondary
+) {
+    Text(
+        text = text,
+        modifier = modifier.padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 8.dp),
+        style = style,
+        maxLines = maxLines,
+        color = color
+    )
+} 
