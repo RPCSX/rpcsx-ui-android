@@ -23,7 +23,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_rpcsx_round"
         android:supportsRtl="true"
-        android:isGame="true"
+        android:appCategory="game"
         android:theme="@style/Theme.RPCSX"
         tools:targetApi="31">
 
