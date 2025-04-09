@@ -433,7 +433,7 @@ fun SettingsScreen(
                     icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_folder)) },
                     description = "Open internal directory of RPCSX in file manager"
                 ) {
-                    if (context.launchBrowseIntent(Intent.ACTION_VIEW) or context.launchBrowseIntent()) {
+                    if (!context.launchBrowseIntent(Intent.ACTION_VIEW) or !context.launchBrowseIntent()) {
                         AlertDialogQueue.showDialog("View Internal Directory Error",  "No Activity found to handle this action")
                     }
                 }
