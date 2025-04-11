@@ -70,6 +70,11 @@ jobs:
     - name: Install packages
       run: yes | sdkmanager "cmake;3.31.6"
 
+    - name: Export Variables
+      run: |
+        echo RX_VERSION=`git log --date=format:%Y%m%d --pretty=format:'%cd' -n 1` >> "${{ github.env }}"
+        echo RX_SHA=`git log --pretty=format:'%h' -n 1` >> "${{ github.env }}"
+
     - name: Build with Gradle
       env: 
         KEYSTORE_PATH: "ks.jks"
@@ -78,8 +83,6 @@ jobs:
         CMAKE_C_COMPILER_LAUNCHER: "ccache"
         CMAKE_CXX_COMPILER_LAUNCHER: "ccache"
       run: |
-        echo RX_VERSION=`git log --date=format:%Y%m%d --pretty=format:'%cd' -n 1` >> "${{ github.env }}"
-        echo RX_SHA=`git log --pretty=format:'%h' -n 1` >> "${{ github.env }}"
         ./gradlew assembleRelease
   
     - name: Build release artifacts
