@@ -19,7 +19,6 @@ navigationCompose = "2.8.9"
 activity = "1.10.1"
 uiToolingPreviewAndroid = "1.7.8"
 uiTooling = "1.7.8"
-animationGraphics = "1.7.8"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -41,7 +40,6 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
-androidx-animation-graphics = { group = "androidx.compose.animation", name = "animation-graphics", version.ref = "animationGraphics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
