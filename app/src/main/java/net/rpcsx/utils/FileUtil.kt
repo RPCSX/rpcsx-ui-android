@@ -1,5 +1,7 @@
 package net.rpcsx.utils
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.AssetFileDescriptor
@@ -13,6 +15,7 @@ import net.rpcsx.GameRepository
 import net.rpcsx.PrecompilerService
 import net.rpcsx.PrecompilerServiceAction
 import net.rpcsx.ProgressRepository
+import net.rpcsx.provider.AppDataDocumentProvider
 import net.rpcsx.RPCSX
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
@@ -220,13 +223,43 @@ object FileUtil {
     }
 
     fun deleteCache(ctx: Context, gameId: String, onComplete: (Boolean) -> Unit) {
-         CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             val result = File(ctx.getExternalFilesDir(null)!!, "cache/cache/$gameId").deleteRecursively()
             withContext(Dispatchers.Main) {
                 onComplete(result)
             }
-         }
+        }
     }
+
+    fun launchInternalDir(ctx: Context): Boolean {
+        if (!ctx.launchBrowseIntent(Intent.ACTION_VIEW)) {
+            if (!ctx.launchBrowseIntent()) {
+                if (!ctx.launchBrowseIntent(Intent.ACTION_OPEN_DOCUMENT_TREE)) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    private fun Context.launchBrowseIntent(
+        action: String = "android.provider.action.BROWSE"
+    ): Boolean {
+        return try {
+            val intent = Intent(action).apply {
+                addCategory(Intent.CATEGORY_DEFAULT)
+                data = DocumentsContract.buildRootUri(
+                    AppDataDocumentProvider.AUTHORITY, AppDataDocumentProvider.ROOT_ID
+                )
+                addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PREFIX_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            }
+            startActivity(intent)
+            true
+        } catch (_: ActivityNotFoundException) {
+            println("No activity found to handle $action intent")
+            false
+        }
+    } 
 }
 
 class SimpleDocument(val filename: String, val mimeType: String, val uri: Uri) {
