@@ -1,4 +1,4 @@
-1package net.rpcsx.overlay
+package net.rpcsx.overlay
 
 import android.content.Context
 import android.os.VibrationEffect
