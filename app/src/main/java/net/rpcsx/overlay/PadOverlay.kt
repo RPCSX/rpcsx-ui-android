@@ -431,7 +431,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             createOutline(isEditing, button.bounds, canvas, genGrayOutlinePaint(
                 if(button.enabled)
                     (1f -
-                        (GeneralSettings["button_${dpad.digital1}_${dpad.digital2}_opacity"] as Int? ?: 50).toFloat() / 100f
+                        (GeneralSettings["button_${button.digital1}_${button.digital2}_opacity"] as Int? ?: 50).toFloat() / 100f
                     )
                 else
                     (1f)
