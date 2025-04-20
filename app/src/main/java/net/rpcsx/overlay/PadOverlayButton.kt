@@ -7,7 +7,7 @@ import android.view.MotionEvent
 import kotlin.math.roundToInt
 import net.rpcsx.utils.GeneralSettings
 
-class PadOverlayButton(resources: Resources, image: Bitmap, private val digital1: Int, private val digital2: Int) : BitmapDrawable(resources, image) {
+class PadOverlayButton(resources: Resources, image: Bitmap, val digital1: Int, val digital2: Int) : BitmapDrawable(resources, image) {
     private var pressed = false
     private var locked = -1
     private var origAlpha = alpha
