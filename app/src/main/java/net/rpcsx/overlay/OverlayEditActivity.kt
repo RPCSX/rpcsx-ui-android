@@ -220,9 +220,10 @@ fun ControlPanel(
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
 
-    val panelWidth = 336f
-    val panelHeight = 200f
-    
+    val panelWidth    = 336f
+    val panelHeight   = 200f
+    val panelWidthPx  = dpToPx(panelWidth)
+    val panelHeightPx = dpToPx(panelHeight)
     var panelOffset by remember { 
         mutableStateOf(
             PointF(
@@ -231,7 +232,7 @@ fun ControlPanel(
             )
         ) 
     }
-
+    
     Box(
         modifier = Modifier
             .offset { IntOffset(panelOffset.x.toInt(), panelOffset.y.toInt()) }
@@ -242,8 +243,8 @@ fun ControlPanel(
                 detectDragGestures { change, dragAmount ->
                     change.consume()
                     panelOffset = PointF(
-                        (panelOffset.x + dragAmount.x).coerceIn(dpToPx(panelWidth)  / -2f, screenWidth  + dpToPx(panelWidth)  / -2f),
-                        (panelOffset.y + dragAmount.y).coerceIn(dpToPx(panelHeight) / -2f, screenHeight + dpToPx(panelHeight) / -2f)
+                        (panelOffset.x + dragAmount.x).coerceIn(panelWidthPx  / -2f, screenWidth  + panelWidthPx  / -2f),
+                        (panelOffset.y + dragAmount.y).coerceIn(panelHeightPx / -2f, screenHeight + panelHeightPx / -2f)
                     )
                 }
             }
