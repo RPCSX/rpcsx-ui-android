@@ -298,16 +298,27 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                     MotionEvent.ACTION_MOVE -> {
                         buttons.forEach { button ->
                             if (button.dragging) {
-                                button.updatePosition(x, y)
+                                if(button
+                                button.updatePosition(
+                                    x.coerceIn(button.defaultSize.second / -2f, totalWidth  + button.defaultSize.second / -2f),
+                                    y.coerceIn(button.defaultSize.first  / -2f, totalHeight + button.defaultSize.first  / -2f)
+                                )
                                 hit = true
                             }
                         }
                         if (dpad.dragging) {
-                            dpad.updatePosition(x, y)
+                            dpad.updatePosition(
+                                x.coerceIn(dpadW / -2f, totalWidth  + dpadW / -2f),
+                                y.coerceIn(dpadH / -2f, totalHeight + dpadH / -2f)
+                            )
                             hit = true
                         }
                         if (triangleSquareCircleCross.contains(x, y)) {
-                            triangleSquareCircleCross.updatePosition(x, y)
+                            triangleSquareCircleCross.updatePosition(
+                                x.coerceIn(buttonSize * 3 / -2f, totalWidth  + buttonSize *3 / -2f),
+                                y.coerceIn(buttonSize * 3 / -2f, totalHeight + buttonSize *3 / -2f)
+                            )
+
                             hit = true
                         }
                     }

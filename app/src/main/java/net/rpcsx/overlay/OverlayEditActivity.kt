@@ -229,8 +229,8 @@ fun ControlPanel(
     var panelOffset by remember { 
         mutableStateOf(
             PointF(
-                (screenWidth / 2f - panelWidth / 2f), 
-                (screenHeight / 2f - panelHeight / 2f)
+                (screenWidthPx  / 2f + panelWidthPx  / -2f), 
+                (screenHeightPx / 2f + panelHeightPx / -2f)
             )
         ) 
     }
