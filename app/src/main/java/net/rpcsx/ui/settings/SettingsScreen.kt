@@ -1,6 +1,5 @@
 package net.rpcsx.ui.settings
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.provider.DocumentsContract
@@ -76,6 +75,7 @@ import net.rpcsx.Digital2Flags
 import net.rpcsx.Digital1Flags
 import net.rpcsx.utils.InputBindingPrefs
 import net.rpcsx.utils.GeneralSettings
+import net.rpcsx.utils.FileUtil
 import net.rpcsx.dialogs.AlertDialogQueue
 import net.rpcsx.provider.AppDataDocumentProvider
 import net.rpcsx.ui.common.ComposePreview
@@ -457,7 +457,7 @@ fun SettingsScreen(
                     icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_folder)) },
                     description = "Open internal directory of RPCSX in file manager"
                 ) {
-                    if (!context.launchBrowseIntent(Intent.ACTION_VIEW)) {
+                    if (!FileUtil.launchInternalDir(context)) {
                         AlertDialogQueue.showDialog("View Internal Directory Error",  "No Activity found to handle this action")
                     }
                 }
@@ -763,24 +763,5 @@ fun ButtonMappingAnim() {
 private fun SettingsScreenPreview() {
     ComposePreview {
 //        SettingsScreen {}
-    }
-}
-
-private fun Context.launchBrowseIntent(
-    action: String = "android.provider.action.BROWSE"
-): Boolean {
-    return try {
-        val intent = Intent(action).apply {
-            addCategory(Intent.CATEGORY_DEFAULT)
-            data = DocumentsContract.buildRootUri(
-                AppDataDocumentProvider.AUTHORITY, AppDataDocumentProvider.ROOT_ID
-            )
-            addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION or Intent.FLAG_GRANT_PREFIX_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-        }
-        startActivity(intent)
-        true
-    } catch (_: ActivityNotFoundException) {
-        println("No activity found to handle $action intent")
-        false
     }
 }
