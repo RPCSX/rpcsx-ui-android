@@ -46,7 +46,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.viewinterop.AndroidView
@@ -192,6 +194,11 @@ fun OverlayEditScreen() {
         }
     }
 }
+@Composable
+fun dpToPx(dp: Dp): Float {
+    val density = LocalDensity.current
+    return with(density) { dp.toPx() }
+}
 
 @Composable
 fun ControlPanel(
@@ -234,7 +241,10 @@ fun ControlPanel(
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
-                    panelOffset = PointF(panelOffset.x + dragAmount.x, panelOffset.y + dragAmount.y)
+                    panelOffset = PointF(
+                        (panelOffset.x + dragAmount.x).coerceIn(dpToPx(panelWidth)  / -2f, screenWidth  + dpToPx(panelWidth)  / -2f),
+                        (panelOffset.y + dragAmount.y).coerceIn(dpToPx(panelHeight) / -2f, screenHeight + dpToPx(panelHeight) / -2f)
+                    )
                 }
             }
     ) {
