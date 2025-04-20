@@ -1,4 +1,4 @@
-package net.rpcsx.overlay
+1package net.rpcsx.overlay
 
 import android.content.Context
 import android.os.VibrationEffect
@@ -299,7 +299,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                         buttons.forEach { button ->
                             if (button.dragging) {
                                 button.updatePosition(
-                                    x.coerceIn(0, totalWidth - button.defaultSize.second)
+                                    x.coerceIn(0, totalWidth - button.defaultSize.second),
                                     y.coerceIn(0, totalHeight - button.defaultSize.first)
                                 )
                                 hit = true
