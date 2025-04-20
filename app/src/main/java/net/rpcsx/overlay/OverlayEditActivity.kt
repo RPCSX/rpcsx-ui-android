@@ -219,6 +219,8 @@ fun ControlPanel(
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
+    val screenWidthPx  = dpToPx(Dp(screenWidth))
+    val screenHeightPx = dpToPx(Dp(screenHeight))
 
     val panelWidth    = 336f
     val panelHeight   = 200f
@@ -243,8 +245,8 @@ fun ControlPanel(
                 detectDragGestures { change, dragAmount ->
                     change.consume()
                     panelOffset = PointF(
-                        (panelOffset.x + dragAmount.x).coerceIn(panelWidthPx  / -2f, screenWidth  + panelWidthPx  / -2f),
-                        (panelOffset.y + dragAmount.y).coerceIn(panelHeightPx / -2f, screenHeight + panelHeightPx / -2f)
+                        (panelOffset.x + dragAmount.x).coerceIn(panelWidthPx  / -2f, screenWidthPx  + panelWidthPx  / -2f),
+                        (panelOffset.y + dragAmount.y).coerceIn(panelHeightPx / -2f, screenHeightPx + panelHeightPx / -2f)
                     )
                 }
             }
