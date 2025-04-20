@@ -315,8 +315,8 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                         }
                         if (triangleSquareCircleCross.contains(x, y)) {
                             triangleSquareCircleCross.updatePosition(
-                                x.coerceIn(buttonSize * 3f / -2f, totalWidth  + buttonSize *3f / -2f),
-                                y.coerceIn(buttonSize * 3f / -2f, totalHeight + buttonSize *3f / -2f)
+                                x.coerceIn(buttonSize *3f / -2f, totalWidth  + buttonSize *3f / -2f),
+                                y.coerceIn(buttonSize *3f / -2f, totalHeight + buttonSize *3f / -2f)
                             )
 
                             hit = true
