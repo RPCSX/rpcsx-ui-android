@@ -298,7 +298,6 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                     MotionEvent.ACTION_MOVE -> {
                         buttons.forEach { button ->
                             if (button.dragging) {
-                                if(button
                                 button.updatePosition(
                                     x.coerceIn(button.defaultSize.second / -2, totalWidth  + button.defaultSize.second / -2),
                                     y.coerceIn(button.defaultSize.first  / -2, totalHeight + button.defaultSize.first  / -2)
