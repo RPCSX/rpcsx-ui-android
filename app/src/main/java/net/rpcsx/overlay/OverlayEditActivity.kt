@@ -219,8 +219,8 @@ fun ControlPanel(
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val screenHeight = configuration.screenHeightDp
-    val screenWidthPx  = dpToPx(Dp(screenWidth))
-    val screenHeightPx = dpToPx(Dp(screenHeight))
+    val screenWidthPx  = dpToPx(Dp(screenWidth * 1f))
+    val screenHeightPx = dpToPx(Dp(screenHeight * 1f))
 
     val panelWidth    = 336f
     val panelHeight   = 200f
