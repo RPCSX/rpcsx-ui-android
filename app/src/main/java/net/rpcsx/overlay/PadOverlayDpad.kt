@@ -32,7 +32,7 @@ class PadOverlayDpad(
     resources: Resources,
     private var buttonWidth: Int,
     private var buttonHeight: Int,
-    private val inputId: String,
+    val inputId: String,
     private var area: Rect,
     private val digitalIndex: Int,
     imgTop: Bitmap,
