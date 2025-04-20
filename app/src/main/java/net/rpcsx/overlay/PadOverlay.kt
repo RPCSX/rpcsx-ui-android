@@ -427,7 +427,9 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             
             createOutline(isEditing, button.bounds, canvas, genGrayOutlinePaint(
                 if(button.enabled)
-                    (1f - button.getAlpha())
+                    (1f -
+                        (GeneralSettings["button_${dpad.digital1}_${dpad.digital2}_opacity"] as Int? ?: 50).toFloat() / 100f
+                    )
                 else
                     (1f)
             ))
@@ -438,7 +440,9 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         
         createOutline(isEditing, dpad.getBounds(), canvas, genGrayOutlinePaint(
             if(dpad.enabled)
-                (1f - dpad.getAlpha())
+                (1f -
+                    (GeneralSettings["${dpad.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f
+                )
             else
                 (1f)
         ))
@@ -448,7 +452,9 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         
         createOutline(isEditing, triangleSquareCircleCross.getBounds(), canvas, genGrayOutlinePaint(
             if(triangleSquareCircleCross.enabled)
-                (1f - dpad.getAlpha())
+                (1f -
+                    (GeneralSettings["${triangleSquareCircleCross.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f
+                )
             else
                 (1f)
         ))
