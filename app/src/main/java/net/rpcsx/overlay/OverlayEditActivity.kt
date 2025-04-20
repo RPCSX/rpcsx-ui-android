@@ -222,8 +222,8 @@ fun ControlPanel(
 
     val panelWidth    = 336f
     val panelHeight   = 200f
-    val panelWidthPx  = dpToPx(panelWidth)
-    val panelHeightPx = dpToPx(panelHeight)
+    val panelWidthPx  = dpToPx(Dp(panelWidth))
+    val panelHeightPx = dpToPx(Dp(panelHeight))
     var panelOffset by remember { 
         mutableStateOf(
             PointF(
