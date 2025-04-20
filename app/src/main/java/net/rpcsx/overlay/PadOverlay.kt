@@ -61,7 +61,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         strokeWidth = 5f
     }
     private fun genGrayOutlinePaint(alpha: Float): Paint {
-        val alphaByte = (alpha * 255f) as Int
+        val alphaByte: Int = alpha * 255f
         return Paint().apply {
             color = 0x888888 + (alphaByte << 24)
             style = Paint.Style.STROKE
@@ -448,7 +448,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         
         createOutline(isEditing, triangleSquareCircleCross.getBounds(), canvas, genGrayOutlinePaint(
             if(triangleSquareCircleCross.enabled)
-                (1f - dpad.getAlpha)
+                (1f - dpad.getAlpha())
             else
                 (1f)
         ))
