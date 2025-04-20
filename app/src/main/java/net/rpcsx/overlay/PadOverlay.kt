@@ -61,12 +61,15 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         strokeWidth = 5f
     }
     private fun genGrayOutlinePaint(alpha: Float): Paint {
-        val alphaByte: Int = (alpha * 255f).toInt()
-        return Paint().apply {
-            color = 0x888888 + (alphaByte << 24)
+        val alphaByte = (alpha * 255f).toInt()
+        val alphaShifted = alpha << 24
+        val gray = 0x888888
+        val grayOutlinePaint = Paint().apply {
+            color = alphaShifted + gray
             style = Paint.Style.STROKE
             strokeWidth = 5f
         }
+        return grayOutlinePaint
     }
     
     init {
