@@ -82,7 +82,7 @@ class RPCSX {
     fun overlayPadData(digital1: Int, digital2: Int, leftStickX: Int, leftStickY: Int, rightStickX: Int, rightStickY: Int): Boolean = true
     fun collectGameInfo(rootDir: String, progressId: Long): Boolean = true
     fun systemInfo(): String = "Dummy System Info v1.0"
-    fun settingsGet(path: String): String = "\"dummy_setting_value\""
+    fun settingsGet(path: String): String = "{\"dummy_setting_key\":\"dummy_setting_value\"}"
     fun settingsSet(path: String, value: String): Boolean = true
     fun getState(): Int = EmulatorState.Ready.ordinal
     fun kill() {}
