@@ -76,6 +76,11 @@ android {
             )
             signingConfig = signingConfigs.getByName("custom-key") ?: signingConfigs.getByName("debug")
         }
+        debug {
+            isMinifyEnabled = false
+            isShrinkResources = false
+            signingConfig = signingConfigs.getByName("custom-key") ?: signingConfigs.getByName("debug")
+        }
     }
 
     compileOptions {

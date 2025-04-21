@@ -1,4 +1,4 @@
-# Solely to experience faster compilation when working with just the UI.
+# Solely to experience faster compilation when working with just the UI. for testing, so assembleDebug
 
 # Todo List:
 # - Move librpcsx compilation away
@@ -93,7 +93,7 @@ jobs:
         CMAKE_CXX_COMPILER_LAUNCHER: "ccache"
         CMAKE_DBUILD_UI_ONLY: "ON"
       run: |
-        ./gradlew assembleRelease
+        ./gradlew assembleDebug
   
     - name: Build release artifacts
       uses: actions/upload-artifact@v4
