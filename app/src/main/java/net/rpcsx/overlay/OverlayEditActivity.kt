@@ -266,7 +266,7 @@ fun ControlPanel(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton( onClick = {}, modifier = Modifier.alpha(0f) ) {
-                    Icon(Icons.Default.Close, tint = MaterialTheme.colorScheme.error)
+                    Icon(Icons.Default.Close, contentDescription = "unclickable", tint = MaterialTheme.colorScheme.error)
                 }
                 Column(
                     modifier = Modifier.weight(1f),
