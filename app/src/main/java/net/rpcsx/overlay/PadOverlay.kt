@@ -1,5 +1,6 @@
 package net.rpcsx.overlay
 
+import android.util.Log
 import android.content.Context
 import android.os.VibrationEffect
 import android.os.VibratorManager
@@ -54,7 +55,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         }
 
     private var controlPanelVisible = false
-    fun changeControlPanelVisible(ctrlPV: Boolean): Unit {controlPanelVisible = ctrlPV }
+    fun changeControlPanelVisible(ctrlPV: Boolean): Unit { controlPanelVisible = ctrlPV; Log.d("rpcsxDebug", "changeControlPanelVisible") }
     var onSelectedInputChange: ((Any) -> Unit)? = null
     var isEditing = false
     
