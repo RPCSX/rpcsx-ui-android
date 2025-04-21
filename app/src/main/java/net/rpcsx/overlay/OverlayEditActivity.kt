@@ -125,7 +125,7 @@ fun OverlayEditScreen() {
         padOverlay?.let { applyInsetsToPadOverlay(it) }
         padOverlay?.isEditing = true
         padOverlay?.changeControlPanelVisible(true)
-        padOverlay?.onSelectedInputChange = { input ->
+        padOverlay?.onSelectedInputChange = { input: Any? ->
             if(input != null){
                 val info = (input as? PadOverlayDpad)?.getInfo() ?: (input as? PadOverlayButton)?.getInfo()
                 if (info != null) {
