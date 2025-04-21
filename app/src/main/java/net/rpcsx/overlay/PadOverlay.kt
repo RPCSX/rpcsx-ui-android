@@ -49,7 +49,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     private var selectedInput: Any? = null
         set(value) {
             field = value
-            if(value != nuull)
+            if(value != null)
                 onSelectedInputChange?.invoke(value!!)
         }
 
