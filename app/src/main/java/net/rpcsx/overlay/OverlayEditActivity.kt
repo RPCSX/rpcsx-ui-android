@@ -265,11 +265,10 @@ fun ControlPanel(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(4.dp)
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), RoundedCornerShape(50))
+                Text(
+                    text = "Control Panel",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 IconButton(onClick = onCloseClick) {
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.error)
@@ -346,7 +345,7 @@ fun ControlPanel(
                         Spacer(modifier = Modifier.height(6.dp))
                         SliderComponent("Opacity", opacityValue, onOpacityChange)
                     } else {
-                        
+                        //TODO: Custom relative SliderComponent
                     }
                 }
 
