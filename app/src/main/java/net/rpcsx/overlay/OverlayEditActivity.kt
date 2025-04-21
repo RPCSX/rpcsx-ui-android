@@ -337,7 +337,7 @@ fun ControlPanel(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    if (currentButtonName != null) {
+                    if (currentButtonName != "Everything") {
                         SliderComponent("Scale", scaleValue, onScaleChange)
                         Spacer(modifier = Modifier.height(6.dp))
                         SliderComponent("Opacity", opacityValue, onOpacityChange)
