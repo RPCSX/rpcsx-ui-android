@@ -102,7 +102,7 @@ jobs:
         name: rpcsx-build
         compression-level: 0
         path: |
-          app/build/outputs/apk/release/rpcsx-release.apk
+          app/build/outputs/apk/debug/rpcsx-debug.apk
 
     - name: Create release
       uses: softprops/action-gh-release@v2
