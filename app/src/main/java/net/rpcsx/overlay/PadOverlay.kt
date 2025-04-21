@@ -53,7 +53,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         }
 
     private var controlPanelVisible = false
-    fun changeControlPanelVisible(ctrlPV): Unit = controlPanelVisible = ctrlPV
+    fun changeControlPanelVisible(ctrlPV: Boolean): Unit = controlPanelVisible = ctrlPV
     var onSelectedInputChange: ((Any) -> Unit)? = null
     var isEditing = false
     

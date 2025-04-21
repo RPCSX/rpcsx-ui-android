@@ -108,7 +108,7 @@ fun OverlayEditScreen() {
     var showResetDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var padOverlay: PadOverlay? by remember { mutableStateOf(null) }
-    fun changeIsPanelVisible(ctrlPV): Unit { isPanelVisible = ctrlPV; padOverlay?.changeControlPanelVisible(ctrlPV) }
+    fun changeIsPanelVisible(ctrlPV: Boolean): Unit { isPanelVisible = ctrlPV; padOverlay?.changeControlPanelVisible(ctrlPV) }
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
