@@ -50,8 +50,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     private var selectedInput: Any? = null
         set(value) {
             field = value
-            if(value != null)
-                onSelectedInputChange?.invoke(value!!)
+            onSelectedInputChange?.invoke(value!!)
         }
 
     private var controlPanelVisible = false
