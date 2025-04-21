@@ -126,17 +126,21 @@ fun OverlayEditScreen() {
         padOverlay?.isEditing = true
         padOverlay?.changeControlPanelVisible(true)
         padOverlay?.onSelectedInputChange = { input ->
-            val info = (input as? PadOverlayDpad)?.getInfo() ?: (input as? PadOverlayButton)?.getInfo()
-            if (info != null) {
-                currentButtonName = info.first.toString()
-                scaleValue = info.second.toFloat()
-                opacityValue = info.third.toFloat()
+            if(input != null){
+                val info = (input as? PadOverlayDpad)?.getInfo() ?: (input as? PadOverlayButton)?.getInfo()
+                if (info != null) {
+                    currentButtonName = info.first.toString()
+                    scaleValue = info.second.toFloat()
+                    opacityValue = info.third.toFloat()
+                } else {
+                    currentButtonName = "Everything"
+                }
+                val inputEnabled = (input as? PadOverlayDpad)?.enabled ?: (input as? PadOverlayButton)?.enabled
+                if (inputEnabled != null) {
+                    isEnabled = inputEnabled
+                }
             } else {
                 currentButtonName = "Everything"
-            }
-            val inputEnabled = (input as? PadOverlayDpad)?.enabled ?: (input as? PadOverlayButton)?.enabled
-            if (inputEnabled != null) {
-                isEnabled = inputEnabled
             }
         }
 
