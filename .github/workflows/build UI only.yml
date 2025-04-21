@@ -84,7 +84,7 @@ jobs:
       run: |
         echo RX_VERSION=`git log --date=format:%Y%m%d --pretty=format:'%cd' -n 1` >> "${{ github.env }}"
 
-    - name: Build with Gradle
+    - name: Build UI with Gradle
       env: 
         KEYSTORE_PATH: "ks.jks"
         KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
