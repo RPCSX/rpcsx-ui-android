@@ -60,6 +60,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         style = Paint.Style.STROKE
         strokeWidth = 5f
     }
+    
     private fun genGrayOutlinePaint(alpha: Float): Paint {
         val alphaByte = (alpha * 255f).toInt()
         val alphaShifted = alphaByte shl 24
@@ -71,6 +72,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         }
         return grayOutlinePaint
     }
+
     private val fillPaint = Paint().apply {
         color = (127 shl 24) + 0x888888//gray at half alpha
         style = Paint.Style.FILL
@@ -317,7 +319,6 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                         }
                         if (triangleSquareCircleCross.contains(x, y)) {
                             triangleSquareCircleCross.updatePosition(x, y)
-
                             hit = true
                         }
                     }
