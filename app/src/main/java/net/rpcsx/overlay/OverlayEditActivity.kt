@@ -140,7 +140,7 @@ fun OverlayEditScreen() {
 
         if (!isPanelVisible) {
             FloatingActionButton(
-                onClick = { isPanelVisible = true },
+                onClick = { isPanelVisible = true; padOverlay?.isEditing = true },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 20.dp),
@@ -174,7 +174,7 @@ fun OverlayEditScreen() {
                 },
                 currentButtonName = currentButtonName,
                 onResetClick = { showResetDialog = true },
-                onCloseClick = { isPanelVisible = false },
+                onCloseClick = { isPanelVisible = false; padOverlay?.isEditing = false },
                 onMoveUp = { padOverlay?.moveButtonUp() },
                 onMoveRight = { padOverlay?.moveButtonRight() },
                 onMoveLeft = { padOverlay?.moveButtonLeft() },
