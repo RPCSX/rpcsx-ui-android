@@ -104,7 +104,7 @@ fun OverlayEditScreen() {
     var scaleValue by remember { mutableStateOf(50f) }
     var opacityValue by remember { mutableStateOf(100f) }
     var isEnabled by remember { mutableStateOf(true) }
-    var currentButtonName by remember { mutableStateOf("Unknown") }
+    var currentButtonName by remember { mutableStateOf("Everything") }
     var showResetDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var padOverlay: PadOverlay? by remember { mutableStateOf(null) }
@@ -131,6 +131,8 @@ fun OverlayEditScreen() {
                 currentButtonName = info.first.toString()
                 scaleValue = info.second.toFloat()
                 opacityValue = info.third.toFloat()
+            } else {
+                currentButtonName = "Everything"
             }
             val inputEnabled = (input as? PadOverlayDpad)?.enabled ?: (input as? PadOverlayButton)?.enabled
             if (inputEnabled != null) {
@@ -335,9 +337,13 @@ fun ControlPanel(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    SliderComponent("Scale", scaleValue, onScaleChange)
-                    Spacer(modifier = Modifier.height(6.dp))
-                    SliderComponent("Opacity", opacityValue, onOpacityChange)
+                    if (currentButtonName != null) {
+                        SliderComponent("Scale", scaleValue, onScaleChange)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        SliderComponent("Opacity", opacityValue, onOpacityChange)
+                    } else {
+                        
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))

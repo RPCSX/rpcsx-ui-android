@@ -290,23 +290,31 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             if (isEditing) {
                 when (action) {
                     MotionEvent.ACTION_DOWN -> {
+                        var anyHit = false
                         buttons.forEach { button ->
                             if (button.contains(x, y)) {
                                 selectedInput = button
                                 button.startDragging(x, y)
                                 hit = true
+                                anyHit = true
                             }
                         }
                         if (dpad.contains(x, y)) {
                             selectedInput = dpad
                             dpad.startDragging(x, y)
                             hit = true
+                            anyHit = true
                         }
                         if (triangleSquareCircleCross.contains(x, y)) {
                             selectedInput = triangleSquareCircleCross
                             triangleSquareCircleCross.startDragging(x, y)
                             hit = true
+                            anyHit = true
                         }
+                        if (!anyHit) {//hit background
+                            selectedInput = null
+                        }
+
                     }
                     MotionEvent.ACTION_MOVE -> {
                         buttons.forEach { button ->
@@ -436,7 +444,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 button.draw(canvas)
             
             createOutline(isEditing && controlPanelVisible, button.bounds, canvas, (
-                if(button.enabled)
+                if (button.enabled)
                     genGrayOutlinePaint(1f - (GeneralSettings["button_${button.digital1}_${button.digital2}_opacity"] as Int? ?: 50).toFloat() / 100f )
                 else
                     fillPaint
@@ -447,7 +455,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             dpad.draw(canvas)
         
         createOutline(isEditing && controlPanelVisible, dpad.getBounds(), canvas, (
-            if(dpad.enabled)
+            if (dpad.enabled)
                 genGrayOutlinePaint(1f - (GeneralSettings["${dpad.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f )
             else
                 fillPaint
@@ -457,7 +465,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             triangleSquareCircleCross.draw(canvas)
         
         createOutline(isEditing && controlPanelVisible, triangleSquareCircleCross.getBounds(), canvas, (
-            if(triangleSquareCircleCross.enabled)
+            if (triangleSquareCircleCross.enabled)
                 genGrayOutlinePaint(1f - (GeneralSettings["${triangleSquareCircleCross.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f )
             else
                 fillPaint
@@ -573,49 +581,109 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     }
 
     fun resetButtonConfigs() {
-        (selectedInput as? PadOverlayDpad)?.resetConfigs()
-        ?: (selectedInput as? PadOverlayButton)?.resetConfigs()
-        invalidate()
-        onSelectedInputChange?.invoke(selectedInput!!)
+        if (selectedInput != null) {
+            (selectedInput as? PadOverlayDpad)?.resetConfigs()
+            ?: (selectedInput as? PadOverlayButton)?.resetConfigs()
+            invalidate()
+            onSelectedInputChange?.invoke(selectedInput!!)
+        } else {//reset everything
+            buttons.forEach { button ->
+                selectedInput = button
+                resetButtonConfigs()
+            }
+            selectedInput = dpad
+            resetButtonConfigs()
+            selectedInput = triangleSquareCircleCross
+            resetButtonConfigs()
+            selectedInput = null
+        }
     }
 
     fun moveButtonLeft() {
-        val bounds = (selectedInput as? PadOverlayDpad)?.getBounds() 
-        ?: (selectedInput as? PadOverlayButton)?.bounds
-        if (bounds != null) {
-            (selectedInput as? PadOverlayDpad)?.updatePosition(bounds.left - 1, bounds.top, true)
-            ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left - 1, bounds.top, true)
-            invalidate()
+        if (selectedInput != null) {
+            val bounds = (selectedInput as? PadOverlayDpad)?.getBounds() 
+            ?: (selectedInput as? PadOverlayButton)?.bounds
+            if (bounds != null) {
+                (selectedInput as? PadOverlayDpad)?.updatePosition(bounds.left - 1, bounds.top, true)
+                ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left - 1, bounds.top, true)
+                invalidate()
+            }
+        } else {//move everything left
+            buttons.forEach { button ->
+                selectedInput = button
+                moveButtonLeft()
+            }
+            selectedInput = dpad
+            moveButtonLeft()
+            selectedInput = triangleSquareCircleCross
+            moveButtonLeft()
+            selectedInput = null
         }
     }
 
     fun moveButtonRight() {
-        val bounds = (selectedInput as? PadOverlayDpad)?.getBounds() 
-        ?: (selectedInput as? PadOverlayButton)?.bounds
-        if (bounds != null) {
-            (selectedInput as? PadOverlayDpad)?.updatePosition(bounds.left + 1, bounds.top, true)
-            ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left + 1, bounds.top, true)
-            invalidate()
+        if (selectedInput != null) {
+            val bounds = (selectedInput as? PadOverlayDpad)?.getBounds() 
+            ?: (selectedInput as? PadOverlayButton)?.bounds
+            if (bounds != null) {
+                (selectedInput as? PadOverlayDpad)?.updatePosition(bounds.left + 1, bounds.top, true)
+                ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left + 1, bounds.top, true)
+                invalidate()
+            }
+        } else {//move everything left
+            buttons.forEach { button ->
+                selectedInput = button
+                moveButtonRight()
+            }
+            selectedInput = dpad
+            moveButtonRight()
+            selectedInput = triangleSquareCircleCross
+            moveButtonRight()
+            selectedInput = null
         }
     }
 
     fun moveButtonUp() {
-        val bounds = (selectedInput as? PadOverlayDpad)?.getBounds() 
-        ?: (selectedInput as? PadOverlayButton)?.bounds
-        if (bounds != null) {
-            (selectedInput as? PadOverlayDpad)?.updatePosition(bounds.left, bounds.top - 1, true)
-            ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left, bounds.top - 1, true)
-            invalidate()
+        if (selectedInput != null) {
+            val bounds = (selectedInput as? PadOverlayDpad)?.getBounds() 
+            ?: (selectedInput as? PadOverlayButton)?.bounds
+            if (bounds != null) {
+                (selectedInput as? PadOverlayDpad)?.updatePosition(bounds.left, bounds.top - 1, true)
+                ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left, bounds.top - 1, true)
+                invalidate()
+            }
+        } else {//move everything left
+            buttons.forEach { button ->
+                selectedInput = button
+                moveButtonRight()
+            }
+            selectedInput = dpad
+            moveButtonUp()
+            selectedInput = triangleSquareCircleCross
+            moveButtonUp()
+            selectedInput = null
         }
     }
 
     fun moveButtonDown() {
-        val bounds = (selectedInput as? PadOverlayDpad)?.getBounds() 
-        ?: (selectedInput as? PadOverlayButton)?.bounds
-        if (bounds != null) {
-            (selectedInput as? PadOverlayDpad)?.updatePosition(bounds.left, bounds.top + 1, true)
-            ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left, bounds.top + 1, true)
-            invalidate()
+        if (selectedInput != null) {
+            val bounds = (selectedInput as? PadOverlayDpad)?.getBounds() 
+            ?: (selectedInput as? PadOverlayButton)?.bounds
+            if (bounds != null) {
+                (selectedInput as? PadOverlayDpad)?.updatePosition(bounds.left, bounds.top + 1, true)
+                ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left, bounds.top + 1, true)
+                invalidate()
+            }
+        } else {//move everything left
+            buttons.forEach { button ->
+                selectedInput = button
+                moveButtonDown()
+            }
+            selectedInput = dpad
+            moveButtonDown()
+            selectedInput = triangleSquareCircleCross
+            moveButtonDown()
+            selectedInput = null
         }
     }
 
