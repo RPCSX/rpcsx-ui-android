@@ -114,7 +114,7 @@ jobs:
         # body: 'Some release text body if needed'
         # body_path: or/as/file.md
         files: |
-          app/build/outputs/apk/release/rpcsx-release.apk
+          app/build/outputs/apk/debug/rpcsx-debug.apk
 
     - name: Deploy build
       uses: softprops/action-gh-release@v2
