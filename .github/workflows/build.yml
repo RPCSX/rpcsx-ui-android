@@ -35,9 +35,10 @@ jobs:
       RX_TAG_VERSION: ${{ inputs.releaseTagVersion }}
 
     steps:
-    - name: Don't Checkout repo
-      run: |
-        echo "lmao i got u"
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2
