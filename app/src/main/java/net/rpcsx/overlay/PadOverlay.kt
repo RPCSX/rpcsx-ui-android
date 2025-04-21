@@ -52,6 +52,8 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             onSelectedInputChange?.invoke(value!!)
         }
         
+    private var controlPanelVisible = false
+    fun changeControlPanelVisible(ctrlPV) = controlPanelVisible = ctrlPV
     var onSelectedInputChange: ((Any) -> Unit)? = null
     var isEditing = false
     
@@ -433,7 +435,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             if (button.enabled)
                 button.draw(canvas)
             
-            createOutline(isEditing, button.bounds, canvas, (
+            createOutline(isEditing && controlPanelVisible, button.bounds, canvas, (
                 if(button.enabled)
                     genGrayOutlinePaint(1f - (GeneralSettings["button_${button.digital1}_${button.digital2}_opacity"] as Int? ?: 50).toFloat() / 100f )
                 else
@@ -444,7 +446,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         if (dpad.enabled)
             dpad.draw(canvas)
         
-        createOutline(isEditing, dpad.getBounds(), canvas, (
+        createOutline(isEditing && controlPanelVisible, dpad.getBounds(), canvas, (
             if(dpad.enabled)
                 genGrayOutlinePaint(1f - (GeneralSettings["${dpad.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f )
             else
@@ -454,7 +456,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         if (triangleSquareCircleCross.enabled) 
             triangleSquareCircleCross.draw(canvas)
         
-        createOutline(isEditing, triangleSquareCircleCross.getBounds(), canvas, (
+        createOutline(isEditing && controlPanelVisible, triangleSquareCircleCross.getBounds(), canvas, (
             if(triangleSquareCircleCross.enabled)
                 genGrayOutlinePaint(1f - (GeneralSettings["${triangleSquareCircleCross.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f )
             else

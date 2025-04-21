@@ -108,7 +108,7 @@ fun OverlayEditScreen() {
     var showResetDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var padOverlay: PadOverlay? by remember { mutableStateOf(null) }
-
+    fun changeIsPanelVisible(ctrlPV){ isPanelVisible = ctrlPV; padOverlay?.changeControlPanelVisible(ctrlPV) }
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
@@ -140,7 +140,7 @@ fun OverlayEditScreen() {
 
         if (!isPanelVisible) {
             FloatingActionButton(
-                onClick = { isPanelVisible = true; padOverlay?.isEditing = true },
+                onClick = { changeIsPanelVisible(true) },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 20.dp),
@@ -174,7 +174,7 @@ fun OverlayEditScreen() {
                 },
                 currentButtonName = currentButtonName,
                 onResetClick = { showResetDialog = true },
-                onCloseClick = { isPanelVisible = false; padOverlay?.isEditing = false },
+                onCloseClick = {  changeIsPanelVisible(false) },
                 onMoveUp = { padOverlay?.moveButtonUp() },
                 onMoveRight = { padOverlay?.moveButtonRight() },
                 onMoveLeft = { padOverlay?.moveButtonLeft() },
