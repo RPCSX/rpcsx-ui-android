@@ -1,0 +1,133 @@
+# Solely to experience faster compilation when working with just the UI.
+
+# Todo List:
+# - Move librpcsx compilation away
+# - Do not use legacy CMake scripts (figure out how)
+
+name: Java CI with Gradle (UI Only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseTag:
+        description: Release tag type
+        type: choice
+        options:
+          - Draft
+          - RC
+          - Release
+        default: Draft
+      releaseTagVersion:
+        description: Release tag version
+        type: number
+        default: 0
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RX_VERSION: "Unknown"
+      RX_TAG: ${{ inputs.releaseTag == 'Release' && 2 || inputs.releaseTag == 'RC' && 2 || 0 }}
+      RX_TAG_VERSION: ${{ inputs.releaseTagVersion }}
+      
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Setup CCache
+      uses: hendrikmuhs/ccache-action@v1.2
+
+    - name: Setup Gradle Cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-android-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-android-
+            
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: 17
+
+    - name: Decode Keystore
+      env:
+        KEYSTORE_ENCODED: ${{ secrets.KEYSTORE }}
+      run: | 
+        echo "$KEYSTORE_ENCODED" | base64 --decode > ${{ github.workspace }}/app/ks.jks
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Install packages
+      run: yes | sdkmanager "cmake;3.31.6"
+
+    - name: Export Variables (Draft)
+      if: github.event_name != 'workflow_dispatch' || inputs.releaseTag == 'Draft'
+      run: |
+        echo RX_VERSION=`git log --date=format:%Y%m%d --pretty=format:'%cd' -n 1` >> "${{ github.env }}"
+        echo RX_SHA=`git log --pretty=format:'%h' -n 1` >> "${{ github.env }}"
+
+    - name: Export Variables (Release)
+      if: github.event_name == 'workflow_dispatch' && inputs.releaseTag != 'Draft'
+      run: |
+        echo RX_VERSION=`git log --date=format:%Y%m%d --pretty=format:'%cd' -n 1` >> "${{ github.env }}"
+
+    - name: Build with Gradle
+      env: 
+        KEYSTORE_PATH: "ks.jks"
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        CMAKE_C_COMPILER_LAUNCHER: "ccache"
+        CMAKE_CXX_COMPILER_LAUNCHER: "ccache"
+        CMAKE_DBUILD_UI_ONLY: "ON"
+      run: |
+        ./gradlew assembleRelease
+  
+    - name: Build release artifacts
+      uses: actions/upload-artifact@v4
+      if: ${{ github.event_name != 'workflow_dispatch' }}
+      with:
+        name: rpcsx-build
+        compression-level: 0
+        path: |
+          app/build/outputs/apk/release/rpcsx-release.apk
+
+    - name: Create release
+      uses: softprops/action-gh-release@v2
+      if: ${{ github.event_name == 'workflow_dispatch' }} 
+      with:
+        prerelease: ${{ env.RX_VERSION }}
+        tag_name: v${{ env.RX_VERSION }}${{inputs.releaseTag == 'Draft' && format('-{0}', env.RX_SHA) || ''}}${{inputs.releaseTag != 'Release' && inputs.releaseTag == 'Draft' && format('-{0}', inputs.releaseTag) || ''}}${{ inputs.releaseTagVersion != 0 && format('-{0}', inputs.releaseTagVersion) || ''}}
+        make_latest: true
+        # body: 'Some release text body if needed'
+        # body_path: or/as/file.md
+        files: |
+          app/build/outputs/apk/release/rpcsx-release.apk
+
+    - name: Deploy build
+      uses: softprops/action-gh-release@v2
+      if: |
+        github.event_name != 'pull_request' &&
+        github.event_name != 'workflow_dispatch' &&
+        github.ref == 'refs/heads/master' &&
+        github.repository == 'RPCSX/rpcsx-ui-android'
+      with:
+        prerelease: false
+        make_latest: true
+        repository: RPCSX/rpcsx-ui-android-build
+        token: ${{ secrets.BUILD_TOKEN }}
+        tag_name: v${{ env.RX_VERSION }}-${{ env.RX_SHA }}
+        files: app/build/outputs/apk/release/rpcsx-release.apk
+        body: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}

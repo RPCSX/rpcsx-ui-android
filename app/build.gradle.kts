@@ -87,12 +87,12 @@ android {
         jvmTarget = "11"
     }
 
-    /*externalNativeBuild {
+    externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
             version = "3.31.6"
         }
-    }*/
+    }
 
     buildFeatures {
         viewBinding = true
