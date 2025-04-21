@@ -71,6 +71,10 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         }
         return grayOutlinePaint
     }
+    private val fillPaint = Paint().apply {
+        color = (127 shl 24) + 0x888888//gray at half alpha
+        style = Paint.Style.FILL
+    }
     
     init {
         val metrics = context!!.resources.displayMetrics
@@ -428,38 +432,32 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             if (button.enabled)
                 button.draw(canvas)
             
-            createOutline(isEditing, button.bounds, canvas, genGrayOutlinePaint(
+            createOutline(isEditing, button.bounds, canvas, (
                 if(button.enabled)
-                    (1f -
-                        (GeneralSettings["button_${button.digital1}_${button.digital2}_opacity"] as Int? ?: 50).toFloat() / 100f
-                    )
+                    genGrayOutlinePaint(1f - (GeneralSettings["button_${button.digital1}_${button.digital2}_opacity"] as Int? ?: 50).toFloat() / 100f )
                 else
-                    (1f)
+                    fillPaint
             ))
         }
         
         if (dpad.enabled)
             dpad.draw(canvas)
         
-        createOutline(isEditing, dpad.getBounds(), canvas, genGrayOutlinePaint(
+        createOutline(isEditing, dpad.getBounds(), canvas, (
             if(dpad.enabled)
-                (1f -
-                    (GeneralSettings["${dpad.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f
-                )
+                genGrayOutlinePaint(1f - (GeneralSettings["${dpad.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f )
             else
-                (1f)
+                fillPaint
         ))
             
         if (triangleSquareCircleCross.enabled) 
             triangleSquareCircleCross.draw(canvas)
         
-        createOutline(isEditing, triangleSquareCircleCross.getBounds(), canvas, genGrayOutlinePaint(
+        createOutline(isEditing, triangleSquareCircleCross.getBounds(), canvas, (
             if(triangleSquareCircleCross.enabled)
-                (1f -
-                    (GeneralSettings["${triangleSquareCircleCross.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f
-                )
+                genGrayOutlinePaint(1f - (GeneralSettings["${triangleSquareCircleCross.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f )
             else
-                (1f)
+                fillPaint
         ))
           
         sticks.forEach { it.draw(canvas) }
