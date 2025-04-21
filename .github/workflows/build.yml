@@ -24,10 +24,6 @@ on:
   pull_request:
     branches: [ "master" ]
 
-concurrency:
-  group: workflow-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -39,10 +35,9 @@ jobs:
       RX_TAG_VERSION: ${{ inputs.releaseTagVersion }}
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+    - name: Don't Checkout repo
+      run: |
+        echo "lmao i got u"
 
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2
