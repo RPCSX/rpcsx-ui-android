@@ -16,6 +16,7 @@
 #include "Emu/RSX/Null/NullGSRender.h"
 #include "Emu/RSX/Overlays/overlay_manager.h"
 #include "Emu/RSX/Overlays/overlay_save_dialog.h"
+#include "Emu/RSX/Overlays/overlay_trophy_notification.h"
 #include "Emu/RSX/RSXThread.h"
 #include "Emu/RSX/VK/VKGSRender.h"
 #include "Emu/localized_string_id.h"
@@ -1217,6 +1218,20 @@ struct OverlaySaveDialog : SaveDialogBase {
   }
 };
 
+class OverlayTrophyNotification : public TrophyNotificationBase {
+public:
+  s32 ShowTrophyNotification(
+      const SceNpTrophyDetails &trophy,
+      const std::vector<uchar> &trophy_icon_buffer) override {
+    if (auto manager = g_fxo->try_get<rsx::overlays::display_manager>()) {
+      auto popup = std::make_shared<rsx::overlays::trophy_notification>();
+      return manager->add(popup, false)->show(trophy, trophy_icon_buffer);
+    }
+
+    return 0;
+  }
+};
+
 std::atomic<jlong> MessageDialog::s_pendingProgressId = -1;
 
 struct CompilationWorkload {
@@ -1531,7 +1546,8 @@ static void setupCallbacks() {
           [](auto...) { return std::make_unique<OverlaySaveDialog>(); },
       .get_sendmessage_dialog = [](auto...) { return nullptr; },
       .get_recvmessage_dialog = [](auto...) { return nullptr; },
-      .get_trophy_notification_dialog = [](auto...) { return nullptr; },
+      .get_trophy_notification_dialog =
+          [](auto...) { return std::make_unique<OverlayTrophyNotification>(); },
       .get_localized_string = [](localized_string_id id,
                                  const char *) -> std::string {
         if (int(id) < std::size(g_strings)) {
