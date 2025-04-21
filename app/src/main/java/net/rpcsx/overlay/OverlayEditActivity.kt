@@ -265,6 +265,9 @@ fun ControlPanel(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton( onClick = {}, modifier = Moifier.alpha(0f) ) {
+                    Icon(Icons.Default.Close, tint = MaterialTheme.colorScheme.error)
+                }
                 Column(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally
