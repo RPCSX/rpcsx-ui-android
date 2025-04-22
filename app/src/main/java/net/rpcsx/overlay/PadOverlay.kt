@@ -477,16 +477,14 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         // if(!editingThis || blinker) createOutline()
         val selNull = selectedInput == null
         editables.forEach { editable ->
-            val term =
-                if (editable is PadOverlayDpad)
-                    editable.inputId
-                else //PadOverlayButton
-                    "button_${editable.digital1}_${editable.digital2}"
-            val bounds = 
-                if(editable is PadOverlayDpad)
-                    editable.getBounds()
-                else //PadOverlayButton
-                    editable.bounds
+            val term = when (editable) {
+                is PadOverlayDpad -> editable.inputId
+                is PadOverlayButton -> "button_${editable.digital1}_${editable.digital2}"
+            }
+            val bounds = when (editable) {
+                is PadOverlayDpad -> editable.getBounds()
+                is PadOverlayButton -> editable.bounds
+            }
             if (editable.enabled)
                 editable.draw(canvas)
 
