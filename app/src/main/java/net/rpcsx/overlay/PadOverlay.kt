@@ -1,7 +1,7 @@
 package net.rpcsx.overlay
 
 import android.util.Log
-import 
+import android.context.Context
 import android.os.VibrationEffect
 import android.os.VibratorManager
 import android.os.Vibrator
@@ -24,7 +24,7 @@ import net.rpcsx.Digital1Flags
 import net.rpcsx.Digital2Flags
 import net.rpcsx.RPCSX
 import net.rpcsx.utils.GeneralSettings
-import kotlin.math.mint
+import kotlin.math.min
 
 
 private const val idleAlpha = (0.3 * 255).toInt()
@@ -82,7 +82,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         return grayOutlinePaint
     }
 
-    private val grayFllPaint = Paint().apply {
+    private val grayFillPaint = Paint().apply {
         color = (127 shl 24) + 0x888888//gray at half alpha
         style = Paint.Style.FILL
     }
