@@ -478,11 +478,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         // if(!editingThis || blinker) createOutline()
         val selNull = selectedInput == null
         editables.forEach { editable ->
-            when (editable) {
-                is PadOverlayDpad -> Unit
-                is PadOverlayButton -> Unit
-                else -> throw IllegalArgumenrException("If you see this, you're doomed. ERROR CODE 484")
-            }
+            
             val term = when (editable) {
                 is PadOverlayDpad -> editable.inputId
                 is PadOverlayButton -> "button_${editable.digital1}_${editable.digital2}"
@@ -499,9 +495,12 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 else -> throw IllegalArgumentException("If you see this, you're doomed. ERROR CODE 484")
             }
             val selected = selNull || (selectedInput == editable)
-            
             if (enabled)
-                editable.draw(canvas)
+                when (editable) {
+                    is PadOverlayDpad -> editable.draw(canvas)
+                    is PadOverlayButton -> editable.draw(canvas)
+                    else -> throw IllegalArgumentException("If you see this, you're doomed. ERROR CODE 484")
+                }
             if ( !selected || blinker )
                 createOutline(isEditing && controlPanelVisible, bounds, canvas, (
                     if (selected) (
