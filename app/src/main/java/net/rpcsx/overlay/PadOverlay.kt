@@ -629,7 +629,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         } else {//reset everything
             editables.forEach { editable ->
                 selectedInput = editable
-                moveButtonRight()
+                resetButtonConfigs()
             }
             selectedInput = null
         }
@@ -647,7 +647,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         } else {//move everything left
             editables.forEach { editable ->
                 selectedInput = editable
-                moveButtonRight()
+                moveButtonLeft()
             }
             selectedInput = null
         }
@@ -683,7 +683,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         } else {//move everything up
             editables.forEach { editable ->
                 selectedInput = editable
-                moveButtonRight()
+                moveButtonUp()
             }
             selectedInput = null
         }
@@ -701,7 +701,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         } else {//move everything down
             editables.forEach { editable ->
                 selectedInput = editable
-                moveButtonRight()
+                moveButtonDown()
             }
             selectedInput = null
         }
