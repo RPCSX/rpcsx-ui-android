@@ -62,13 +62,13 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     var isEditing = false
     
     private val whiteOutlinePaint = Paint().apply {
-        color = (127 shl 24) + 0xFFFFFF// half alpha white
+        color = Color.WHITE
         style = Paint.Style.STROKE
         strokeWidth = 5f
     }
 
     private val whiteFillPaint = Paint().apply {
-        color = (127 shl 24) + 0xFFFFFF// half alpha white
+        color = Color.WHITE
         style = Paint.Style.FILL
     }
     
@@ -320,52 +320,58 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 when (action) {
                     MotionEvent.ACTION_DOWN -> {
                         var anyHit = false
-                        buttons.forEach { button ->
-                            if (button.contains(x, y)) {
-                                selectedInput = button
-                                button.startDragging(x, y)
-                                hit = true
-                                anyHit = true
+                        editables.forEach { editable ->
+                            when (editable) {
+                                is PadOverlayButton -> {
+                                    if (editable.contains(x, y)) {
+                                        selectedInput = editable
+                                        editable.startDragging(x, y)
+                                        hit = true
+                                        anyHit = true
+                                    }
+                                }
+                                is PadOverlayDpad -> {
+                                    if (editable.contains(x, y)) {
+                                        selectedInput = editable
+                                        editable.startDragging(x, y)
+                                        hit = true
+                                        anyHit = true
+                                    }
+                                }
+                                else -> throw IllegalArgumentException("If you see this, you're doomed: WHEN_EDITABLE_ELSE_REACHABLE")
                             }
-                        }
-                        if (dpad.contains(x, y)) {
-                            selectedInput = dpad
-                            dpad.startDragging(x, y)
-                            hit = true
-                            anyHit = true
-                        }
-                        if (triangleSquareCircleCross.contains(x, y)) {
-                            selectedInput = triangleSquareCircleCross
-                            triangleSquareCircleCross.startDragging(x, y)
-                            hit = true
-                            anyHit = true
                         }
                         if (!anyHit) {//hit background
                             selectedInput = null
                         }
                     }
                     MotionEvent.ACTION_MOVE -> {
-                        buttons.forEach { button ->
-                            if (button.dragging) {
-                                button.updatePosition(x, y)
-                                hit = true
+                        editables.forEach { editable ->
+                            when (editable) {
+                                is PadOverlayButton -> {
+                                    if (editable.dragging) {
+                                        editable.updatePosition(x, y)
+                                        hit = true
+                                    }
+                                }
+                                is PadOverlayDpad -> {
+                                    if (editable.dragging) {
+                                        editable.updatePosition(x, y)
+                                        hit = true
+                                    }
+                                }
+                                else -> throw IllegalArgumentException("If you see this, you're doomed: WHEN_EDITABLE_ELSE_REACHABLE")
                             }
-                        }
-                        if (dpad.dragging) {
-                            dpad.updatePosition(x, y)
-                            hit = true
-                        }
-                        if (triangleSquareCircleCross.contains(x, y)) {
-                            triangleSquareCircleCross.updatePosition(x, y)
-                            hit = true
                         }
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                        buttons.forEach { button ->
-                            button.stopDragging()
+                        editables.forEach { editable ->
+                            when (editable) {
+                                is PadOverlayButton -> editable.stopDragging()
+                                is PadOverlayDpad -> editable.stopDragging()
+                                else -> throw IllegalArgumentException("If you see this, you're doomed: WHEN_EDITABLE_ELSE_REACHABLE")
+                            }
                         }
-                        dpad.stopDragging()
-                        triangleSquareCircleCross.stopDragging()
                     }
                 }
                 if (hit) invalidate()
@@ -482,24 +488,24 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             val term = when (editable) {
                 is PadOverlayDpad -> editable.inputId
                 is PadOverlayButton -> "button_${editable.digital1}_${editable.digital2}"
-                else -> throw IllegalArgumentException("If you see this, you're doomed. ERROR CODE 484")
+                else -> throw IllegalArgumentException("If you see this, you're doomed: WHEN_EDITABLE_ELSE_REACHABLE")
             }
             val bounds = when (editable) {
                 is PadOverlayDpad -> editable.getBounds()
                 is PadOverlayButton -> editable.bounds
-                else -> throw IllegalArgumentException("If you see this, you're doomed. ERROR CODE 484")
+                else -> throw IllegalArgumentException("If you see this, you're doomed: WHEN_EDITABLE_ELSE_REACHABLE")
             }
             val enabled = when (editable) {
                 is PadOverlayDpad -> editable.enabled
                 is PadOverlayButton -> editable.enabled
-                else -> throw IllegalArgumentException("If you see this, you're doomed. ERROR CODE 484")
+                else -> throw IllegalArgumentException("If you see this, you're doomed: WHEN_EDITABLE_ELSE_REACHABLE")
             }
             val selected = selNull || (selectedInput == editable)
             if (enabled)
                 when (editable) {
                     is PadOverlayDpad -> editable.draw(canvas)
                     is PadOverlayButton -> editable.draw(canvas)
-                    else -> throw IllegalArgumentException("If you see this, you're doomed. ERROR CODE 484")
+                    else -> throw IllegalArgumentException("If you see this, you're doomed: WHEN_EDITABLE_ELSE_REACHABLE")
                 }
             if ( !selected || blinker )
                 createOutline(isEditing && controlPanelVisible, bounds, canvas, (
@@ -621,14 +627,10 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             invalidate()
             onSelectedInputChange?.invoke(selectedInput!!)
         } else {//reset everything
-            buttons.forEach { button ->
-                selectedInput = button
-                resetButtonConfigs()
+            editables.forEach { editable ->
+                selectedInput = editable
+                moveButtonRight()
             }
-            selectedInput = dpad
-            resetButtonConfigs()
-            selectedInput = triangleSquareCircleCross
-            resetButtonConfigs()
             selectedInput = null
         }
     }
@@ -643,14 +645,10 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 invalidate()
             }
         } else {//move everything left
-            buttons.forEach { button ->
-                selectedInput = button
-                moveButtonLeft()
+            editables.forEach { editable ->
+                selectedInput = editable
+                moveButtonRight()
             }
-            selectedInput = dpad
-            moveButtonLeft()
-            selectedInput = triangleSquareCircleCross
-            moveButtonLeft()
             selectedInput = null
         }
     }
@@ -665,14 +663,10 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 invalidate()
             }
         } else {//move everything right
-            buttons.forEach { button ->
-                selectedInput = button
+            editables.forEach { editable ->
+                selectedInput = editable
                 moveButtonRight()
             }
-            selectedInput = dpad
-            moveButtonRight()
-            selectedInput = triangleSquareCircleCross
-            moveButtonRight()
             selectedInput = null
         }
     }
@@ -687,14 +681,10 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 invalidate()
             }
         } else {//move everything up
-            buttons.forEach { button ->
-                selectedInput = button
-                moveButtonUp()
+            editables.forEach { editable ->
+                selectedInput = editable
+                moveButtonRight()
             }
-            selectedInput = dpad
-            moveButtonUp()
-            selectedInput = triangleSquareCircleCross
-            moveButtonUp()
             selectedInput = null
         }
     }
@@ -709,14 +699,10 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 invalidate()
             }
         } else {//move everything down
-            buttons.forEach { button ->
-                selectedInput = button
-                moveButtonDown()
+            editables.forEach { editable ->
+                selectedInput = editable
+                moveButtonRight()
             }
-            selectedInput = dpad
-            moveButtonDown()
-            selectedInput = triangleSquareCircleCross
-            moveButtonDown()
             selectedInput = null
         }
     }
