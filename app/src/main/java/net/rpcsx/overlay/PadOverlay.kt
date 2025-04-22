@@ -302,7 +302,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 Digital2Flags.CELL_PAD_CTRL_R2
             ),
         )
-        editables = buttons + arrayOf(dpad, triangleSquareCircleCross)
+        editables = (buttons as Array<Any>) + (arrayOf(dpad, triangleSquareCircleCross) as Array<Any>)
         setWillNotDraw(false)
         requestFocus()
 
