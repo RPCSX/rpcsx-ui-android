@@ -107,7 +107,6 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         super.onDetachedFromWindow()
     }
 
-    // Existing draw and other methods...
     init {
         val metrics = context!!.resources.displayMetrics
         val totalWidth = metrics.widthPixels
@@ -474,19 +473,24 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         //   createOutline()
         // }
         // which is semantically the same as
-        // if(!editingThis || blinker) createOutline
+        // if(!editingThis || blinker) createOutline()
         val selNull = selectedInput == null
         editables.forEach { editable ->
             val term =
                 if (editable is PadOverlayDpad)
                     editable.inputId
-                else "button_${button.digital1}_${button.digital2}"
-                    
+                else //PadOverlayButton
+                    "button_${editable.digital1}_${editable.digital2}"
+            val bounds = 
+                if(editable is PadOverlayDpad)
+                    editable.getBounds()
+                else //PadOverlayButton
+                    editable.bounds
             if (editable.enabled)
                 editable.draw(canvas)
 
             if ( !(selNull || selectedInput == editable) || blinker )
-                createOutline(isEditing && controlPanelVisible, button.bounds, canvas, (
+                createOutline(isEditing && controlPanelVisible, bounds, canvas, (
                     if (selectedInput == editable || selNull) (
                         if (button.enabled)
                             whiteOutlinePaint
