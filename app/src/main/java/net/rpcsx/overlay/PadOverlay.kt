@@ -1,10 +1,11 @@
 package net.rpcsx.overlay
 
-import android.util.Log
 import android.content.Context
 import android.os.VibrationEffect
 import android.os.VibratorManager
 import android.os.Vibrator
+import android.os.Handler
+import android.os.Looper
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -60,13 +61,13 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     var isEditing = false
     
     private val whiteOutlinePaint = Paint().apply {
-        color = Color.WHITE - 0x80000000 // half alpha white
+        color = Color.WHITE - (0x80000000).toInt() // half alpha white
         style = Paint.Style.STROKE
         strokeWidth = 5f
     }
 
     private val whiteFillPaint = Paint().apply {
-        color = Color.WHITE - 0x80000000 // half alpha white
+        color = Color.WHITE - (0x80000000).toInt) // half alpha white
         style = Paint.Style.FILL
     }
     
