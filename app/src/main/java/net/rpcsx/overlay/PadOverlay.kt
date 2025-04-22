@@ -61,13 +61,13 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     var isEditing = false
     
     private val whiteOutlinePaint = Paint().apply {
-        color = Color.WHITE - ((0x80000000).toInt()) // half alpha white
+        color = (127 shl 24) + 0xFFFFFF// half alpha white
         style = Paint.Style.STROKE
         strokeWidth = 5f
     }
 
     private val whiteFillPaint = Paint().apply {
-        color = Color.WHITE - ((0x80000000).toInt()) // half alpha white
+        color = (127 shl 24) + 0xFFFFFF// half alpha white
         style = Paint.Style.FILL
     }
     
@@ -302,7 +302,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 Digital2Flags.CELL_PAD_CTRL_R2
             ),
         )
-        editables = buttons + listOf(dpad, triangleSquareCircleCross)
+        editables = buttons + arrayOf(dpad, triangleSquareCircleCross)
         setWillNotDraw(false)
         requestFocus()
 
