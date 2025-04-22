@@ -486,16 +486,20 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             val term = when (editable) {
                 is PadOverlayDpad -> editable.inputId
                 is PadOverlayButton -> "button_${editable.digital1}_${editable.digital2}"
+                else -> throw IllegalArgumentException("If you see this, you're doomed. ERROR CODE 484")
             }
             val bounds = when (editable) {
                 is PadOverlayDpad -> editable.getBounds()
                 is PadOverlayButton -> editable.bounds
+                else -> throw IllegalArgumentException("If you see this, you're doomed. ERROR CODE 484")
             }
             val enabled = when (editable) {
                 is PadOverlayDpad -> editable.enabled
                 is PadOverlayButton -> editable.enabled
+                else -> throw IllegalArgumentException("If you see this, you're doomed. ERROR CODE 484")
             }
             val selected = selNull || (selectedInput == editable)
+            
             if (enabled)
                 editable.draw(canvas)
             if ( !selected || blinker )
