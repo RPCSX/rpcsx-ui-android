@@ -1,7 +1,7 @@
 package net.rpcsx.overlay
 
 import android.util.Log
-import android.content.Context
+import 
 import android.os.VibrationEffect
 import android.os.VibratorManager
 import android.os.Vibrator
@@ -24,7 +24,7 @@ import net.rpcsx.Digital1Flags
 import net.rpcsx.Digital2Flags
 import net.rpcsx.RPCSX
 import net.rpcsx.utils.GeneralSettings
-import kotlin.math.min
+import kotlin.math.mint
 
 
 private const val idleAlpha = (0.3 * 255).toInt()
@@ -39,6 +39,7 @@ data class State(
 
 class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context, attrs) {
     private val buttons: Array<PadOverlayButton>
+    private val editables: Array<Any>
     private val dpad: PadOverlayDpad
     private val triangleSquareCircleCross: PadOverlayDpad
     private val state = State()
@@ -54,14 +55,19 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         }
 
     private var controlPanelVisible = false
-    fun changeControlPanelVisible(ctrlPV: Boolean): Unit { controlPanelVisible = ctrlPV; Log.d("rpcsxDebug", "changeControlPanelVisible") }
+    fun changeControlPanelVisible(ctrlPV: Boolean): Unit { controlPanelVisible = ctrlPV; invalidate() }
     var onSelectedInputChange: ((Any?) -> Unit)? = null
     var isEditing = false
     
-    private val outlinePaint = Paint().apply {
-        color = Color.RED
+    private val whiteOutlinePaint = Paint().apply {
+        color = Color.WHITE - 0x80000000 // half alpha white
         style = Paint.Style.STROKE
         strokeWidth = 5f
+    }
+
+    private val whiteFillPaint = Paint().apply {
+        color = Color.WHITE - 0x80000000 // half alpha white
+        style = Paint.Style.FILL
     }
     
     private fun genGrayOutlinePaint(alpha: Float): Paint {
@@ -76,11 +82,32 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         return grayOutlinePaint
     }
 
-    private val fillPaint = Paint().apply {
+    private val grayFllPaint = Paint().apply {
         color = (127 shl 24) + 0x888888//gray at half alpha
         style = Paint.Style.FILL
     }
     
+    private var blinker = false
+    private val blinkerHandler = Handler(Looper.getMainLooper())
+    private val blinkerRunnable = object : Runnable {
+        override fun run() {
+            blinker = !blinker
+            invalidate()
+            blinkerHandler.postDelayed(this, 333)
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        blinkerHandler.postDelayed(blinkerRunnable, 333)
+    }
+
+    override fun onDetachedFromWindow() {
+        blinkerHandler.removeCallbacks(blinkerRunnable)
+        super.onDetachedFromWindow()
+    }
+
+    // Existing draw and other methods...
     init {
         val metrics = context!!.resources.displayMetrics
         val totalWidth = metrics.widthPixels
@@ -275,7 +302,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 Digital2Flags.CELL_PAD_CTRL_R2
             ),
         )
-
+        editables = buttons + listOf(dpad, triangleSquareCircleCross)
         setWillNotDraw(false)
         requestFocus()
 
@@ -315,7 +342,6 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                         if (!anyHit) {//hit background
                             selectedInput = null
                         }
-
                     }
                     MotionEvent.ACTION_MOVE -> {
                         buttons.forEach { button ->
@@ -440,52 +466,43 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        buttons.forEach { button -> 
-            if (button.enabled)
-                button.draw(canvas)
-            
-            createOutline(isEditing && controlPanelVisible, button.bounds, canvas, (
-                if (button.enabled)
-                    genGrayOutlinePaint(1f - (GeneralSettings["button_${button.digital1}_${button.digital2}_opacity"] as Int? ?: 50).toFloat() / 100f )
-                else
-                    fillPaint
-            ))
+        // if(editingThis){
+        //   if(blinker){
+        //     createOutline()
+        //   }
+        // } else {
+        //   createOutline()
+        // }
+        // which is semantically the same as
+        // if(!editingThis || blinker) createOutline
+        val selNull = selectedInput == null
+        editables.forEach { editable ->
+            val term =
+                if (editable is PadOverlayDpad)
+                    editable.inputId
+                else "button_${button.digital1}_${button.digital2}"
+                    
+            if (editable.enabled)
+                editable.draw(canvas)
+
+            if ( !(selNull || selectedInput == editable) || blinker )
+                createOutline(isEditing && controlPanelVisible, button.bounds, canvas, (
+                    if (selectedInput == editable || selNull) (
+                        if (button.enabled)
+                            whiteOutlinePaint
+                        else
+                            whiteFillPaint
+                    ) else ( // not selected
+                        if (button.enabled)
+                            genGrayOutlinePaint(1f - (GeneralSettings["${term}_opacity"] as Int? ?: 50).toFloat() / 100f )
+                        else
+                            grayFillPaint
+                    )
+                ))
         }
-        
-        if (dpad.enabled)
-            dpad.draw(canvas)
-        
-        createOutline(isEditing && controlPanelVisible, dpad.getBounds(), canvas, (
-            if (dpad.enabled)
-                genGrayOutlinePaint(1f - (GeneralSettings["${dpad.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f )
-            else
-                fillPaint
-        ))
-            
-        if (triangleSquareCircleCross.enabled) 
-            triangleSquareCircleCross.draw(canvas)
-        
-        createOutline(isEditing && controlPanelVisible, triangleSquareCircleCross.getBounds(), canvas, (
-            if (triangleSquareCircleCross.enabled)
-                genGrayOutlinePaint(1f - (GeneralSettings["${triangleSquareCircleCross.inputId}_opacity"] as Int? ?: 50).toFloat() / 100f )
-            else
-                fillPaint
-        ))
-          
         sticks.forEach { it.draw(canvas) }
         floatingSticks.forEach { it?.draw(canvas) }
-
-        if (isEditing && selectedInput != null) {
-            val bounds = when (selectedInput) {
-                is PadOverlayButton -> (selectedInput as PadOverlayButton).bounds
-                is PadOverlayDpad -> (selectedInput as PadOverlayDpad).getBounds()
-                else -> null
-            }
-
-            bounds?.let {
-                createOutline(true, it, canvas, outlinePaint)
-            }
-        }
+        
     }
 
     private fun createOutline(shouldApply: Boolean = true, bounds: Rect, canvas: Canvas, outlinePaintColor: Paint) {
@@ -631,7 +648,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left + 1, bounds.top, true)
                 invalidate()
             }
-        } else {//move everything left
+        } else {//move everything right
             buttons.forEach { button ->
                 selectedInput = button
                 moveButtonRight()
@@ -653,10 +670,10 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left, bounds.top - 1, true)
                 invalidate()
             }
-        } else {//move everything left
+        } else {//move everything up
             buttons.forEach { button ->
                 selectedInput = button
-                moveButtonRight()
+                moveButtonUp()
             }
             selectedInput = dpad
             moveButtonUp()
@@ -665,7 +682,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             selectedInput = null
         }
     }
-
+    
     fun moveButtonDown() {
         if (selectedInput != null) {
             val bounds = (selectedInput as? PadOverlayDpad)?.getBounds() 
@@ -675,7 +692,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
                 ?: (selectedInput as? PadOverlayButton)?.updatePosition(bounds.left, bounds.top + 1, true)
                 invalidate()
             }
-        } else {//move everything left
+        } else {//move everything down
             buttons.forEach { button ->
                 selectedInput = button
                 moveButtonDown()
