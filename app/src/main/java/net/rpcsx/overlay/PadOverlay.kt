@@ -1,5 +1,6 @@
 package net.rpcsx.overlay
 
+import android.util.Log
 import android.content.Context
 import android.os.VibrationEffect
 import android.os.VibratorManager
@@ -477,28 +478,29 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         // if(!editingThis || blinker) createOutline()
         val selNull = selectedInput == null
         editables.forEach { editable ->
+            when (editable) {
+                is PadOverlayDpad -> Unit
+                is PadOverlayButton -> Unit
+                else -> throw IllegalArgumenrException("If you see this, you're doomed. ERROR CODE 484")
+            }
             val term = when (editable) {
                 is PadOverlayDpad -> editable.inputId
                 is PadOverlayButton -> "button_${editable.digital1}_${editable.digital2}"
-                else -> null
             }
             val bounds = when (editable) {
                 is PadOverlayDpad -> editable.getBounds()
                 is PadOverlayButton -> editable.bounds
-                else -> null
             }
             val enabled = when (editable) {
                 is PadOverlayDpad -> editable.enabled
-                is PadOverlayButton -> editable.enaed
-                else -> null
+                is PadOverlayButton -> editable.enabled
             }
-                
+            val selected = selNull || (selectedInput == editable)
             if (enabled)
                 editable.draw(canvas)
-
-            if ( !(selNull || selectedInput == editable) || blinker )
+            if ( !selected || blinker )
                 createOutline(isEditing && controlPanelVisible, bounds, canvas, (
-                    if (selectedInput == editable || selNull) (
+                    if (selected) (
                         if (enabled)
                             whiteOutlinePaint
                         else
