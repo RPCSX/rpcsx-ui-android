@@ -61,13 +61,13 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     var isEditing = false
     
     private val whiteOutlinePaint = Paint().apply {
-        color = Color.WHITE - (0x80000000).toInt() // half alpha white
+        color = Color.WHITE - ((0x80000000).toInt()) // half alpha white
         style = Paint.Style.STROKE
         strokeWidth = 5f
     }
 
     private val whiteFillPaint = Paint().apply {
-        color = Color.WHITE - (0x80000000).toInt) // half alpha white
+        color = Color.WHITE - ((0x80000000).toInt()) // half alpha white
         style = Paint.Style.FILL
     }
     
