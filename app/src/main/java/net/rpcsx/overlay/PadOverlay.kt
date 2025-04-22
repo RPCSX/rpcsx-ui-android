@@ -480,23 +480,31 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             val term = when (editable) {
                 is PadOverlayDpad -> editable.inputId
                 is PadOverlayButton -> "button_${editable.digital1}_${editable.digital2}"
+                else -> null
             }
             val bounds = when (editable) {
                 is PadOverlayDpad -> editable.getBounds()
                 is PadOverlayButton -> editable.bounds
+                else -> null
             }
-            if (editable.enabled)
+            val enabled = when (editable) {
+                is PadOverlayDpad -> editable.enabled
+                is PadOverlayButton -> editable.enaed
+                else -> null
+            }
+                
+            if (enabled)
                 editable.draw(canvas)
 
             if ( !(selNull || selectedInput == editable) || blinker )
                 createOutline(isEditing && controlPanelVisible, bounds, canvas, (
                     if (selectedInput == editable || selNull) (
-                        if (button.enabled)
+                        if (enabled)
                             whiteOutlinePaint
                         else
                             whiteFillPaint
                     ) else ( // not selected
-                        if (button.enabled)
+                        if (enabled)
                             genGrayOutlinePaint(1f - (GeneralSettings["${term}_opacity"] as Int? ?: 50).toFloat() / 100f )
                         else
                             grayFillPaint
