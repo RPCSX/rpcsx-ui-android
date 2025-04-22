@@ -1,7 +1,7 @@
 package net.rpcsx.overlay
 
 import android.util.Log
-import android.context.Context
+import android.content.Context
 import android.os.VibrationEffect
 import android.os.VibratorManager
 import android.os.Vibrator
