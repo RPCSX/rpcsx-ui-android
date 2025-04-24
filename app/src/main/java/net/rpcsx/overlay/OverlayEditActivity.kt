@@ -254,7 +254,8 @@ fun ControlPanel(
                     text = "Control Panel",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleLarge,
+		    color = MaterialTheme.colorScheme.onSurface
                 )
                 IconButton(onClick = onCloseClick) {
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.error)
