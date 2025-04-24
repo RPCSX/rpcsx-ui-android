@@ -34,7 +34,10 @@ class MainActivity : ComponentActivity() {
         }
 
         if (!RPCSX.initialized) {
-            lifecycleScope.launch { GameRepository.load() }
+            lifecycleScope.launch {
+                GameRepository.load()
+                UserRepository.load()
+            }
             FirmwareRepository.load()
         }
 
@@ -55,7 +58,7 @@ class MainActivity : ComponentActivity() {
 
         if (!RPCSX.initialized) {
             GitHub.initialize(this)
-            RPCSX.instance.initialize(RPCSX.rootDirectory)
+            RPCSX.instance.initialize(RPCSX.rootDirectory, UserRepository.getUserFromSettings())
             val nativeLibraryDir = packageManager.getApplicationInfo(packageName, 0).nativeLibraryDir
             RPCSX.instance.settingsSet("Video@@Vulkan@@Custom Driver@@Hook Directory", "\"" + nativeLibraryDir + "\"")
             RPCSX.initialized = true

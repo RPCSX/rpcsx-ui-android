@@ -1704,7 +1704,7 @@ extern "C" JNIEXPORT jboolean JNICALL Java_net_rpcsx_RPCSX_overlayPadData(
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
-Java_net_rpcsx_RPCSX_initialize(JNIEnv *env, jobject, jstring rootDir) {
+Java_net_rpcsx_RPCSX_initialize(JNIEnv *env, jobject, jstring rootDir, jstring user) {
   auto rootDirStr = fix_dir_path(unwrap(env, rootDir));
 
   if (g_android_executable_dir != rootDirStr) {
@@ -1800,6 +1800,7 @@ Java_net_rpcsx_RPCSX_initialize(JNIEnv *env, jobject, jstring rootDir) {
   virtual_pad_handler::set_on_connect_cb(initVirtualPad);
   setupCallbacks();
   Emu.SetHasGui(false);
+  Emu.SetUsr(unwrap(env, user));
   Emu.Init();
 
   g_cfg_input.player1.handler.set(pad_handler::virtual_pad);
@@ -2591,6 +2592,16 @@ static cfg::_base *find_cfg_node(cfg::_base *root, std::string_view path) {
   }
 
   return root;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_net_rpcsx_RPCSX_loginUser(JNIEnv *env, jobject, jstring user_id) {
+    Emu.SetUsr(unwrap(env, user_id));
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_net_rpcsx_RPCSX_getUser(JNIEnv *env, jobject) {
+    return wrap(env, Emu.GetUsr());
 }
 
 extern "C" JNIEXPORT jstring JNICALL

@@ -70,7 +70,7 @@ enum class BootResult
 };
 
 class RPCSX {
-    external fun initialize(rootDir: String): Boolean
+    external fun initialize(rootDir: String, user: String): Boolean
     external fun installFw(fd: Int, progressId: Long): Boolean
     external fun install(fd: Int, progressId: Long): Boolean
     external fun installKey(fd: Int, requestId: Long, gamePath: String): Boolean
@@ -88,6 +88,8 @@ class RPCSX {
     external fun kill()
     external fun resume()
     external fun openHomeMenu()
+    external fun loginUser(userId: String)
+    external fun getUser(): String
     external fun getTitleId(): String
     external fun supportsCustomDriverLoading() : Boolean
     external fun isInstallableFile(fd: Int) : Boolean
@@ -118,6 +120,10 @@ class RPCSX {
         fun getState(): EmulatorState {
             updateState()
             return state.value
+        }
+
+        fun getHdd0Dir(): String {
+            return rootDirectory + "config/dev_hdd0/"
         }
 
         init {
