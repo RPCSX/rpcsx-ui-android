@@ -131,7 +131,7 @@ class UserRepository {
             RPCSX.instance.loginUser(userId)
             instance.activeUser.value = userId
             GeneralSettings.setValue("active_user", userId)
-            thread { GameRepository.refresh() }
+            GameRepository.queue_refresh()
         }
 
         fun validateUsername(textToValidate: String): Boolean {
