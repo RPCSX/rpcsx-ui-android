@@ -420,11 +420,7 @@ fun GamesScreen() {
             if (gameInProgress == null) {
                 isRefreshing.value = true
                 thread {
-                    GameRepository.clear()
-                    RPCSX.instance.collectGameInfo(
-                        RPCSX.rootDirectory + "/config/dev_hdd0/game", -1
-                    )
-                    RPCSX.instance.collectGameInfo(RPCSX.rootDirectory + "/config/games", -1)
+                    GameRepository.refresh()
                     Thread.sleep(300)
                     isRefreshing.value = false
                 }

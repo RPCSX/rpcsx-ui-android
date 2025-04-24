@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.text.isDigitsOnly
 import net.rpcsx.utils.GeneralSettings
 import java.io.File
+import kotlin.concurrent.thread
 
 data class User(
     val userId: String,
@@ -27,7 +28,6 @@ private fun toUser(userId: String): User {
 class UserRepository {
     private val users = mutableStateMapOf<Int, User>()
     private var activeUser = mutableStateOf("")
-    private var activeUsername = mutableStateOf("")
 
     companion object {
         private val instance = UserRepository()
@@ -48,7 +48,7 @@ class UserRepository {
         }
 
         fun getUserFromSettings(): String {
-            return GeneralSettings["activeUser"] as? String ?: "00000001"
+            return GeneralSettings["active_user"] as? String ?: "00000001"
         }
 
         private fun updateList() {
@@ -130,7 +130,8 @@ class UserRepository {
         fun loginUser(userId: String) {
             RPCSX.instance.loginUser(userId)
             instance.activeUser.value = userId
-            GeneralSettings.setValue("activeUser", userId)
+            GeneralSettings.setValue("active_user", userId)
+            thread { GameRepository.refresh() }
         }
 
         fun validateUsername(textToValidate: String): Boolean {
