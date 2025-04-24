@@ -29,6 +29,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Info
@@ -49,6 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,6 +77,7 @@ import net.rpcsx.PrecompilerServiceAction
 import net.rpcsx.ProgressRepository
 import net.rpcsx.R
 import net.rpcsx.RPCSX
+import net.rpcsx.UserRepository
 import net.rpcsx.dialogs.AlertDialogQueue
 import net.rpcsx.overlay.OverlayEditActivity
 import net.rpcsx.ui.channels.DefaultGpuDriverChannel
@@ -93,6 +96,7 @@ import net.rpcsx.ui.games.GamesScreen
 import net.rpcsx.ui.settings.AdvancedSettingsScreen
 import net.rpcsx.ui.settings.SettingsScreen
 import net.rpcsx.ui.settings.ControllerSettings
+import net.rpcsx.ui.user.UsersScreen
 import net.rpcsx.utils.FileUtil
 import org.json.JSONObject
 
@@ -167,8 +171,15 @@ fun AppNavHost() {
         ) {
             GamesDestination(
                 navigateToSettings = { navController.navigate("settings") },
+                navigateToUsers = { navController.navigate("users") },
                 drawerState
             )
+        }
+
+        composable(
+            route = "users"
+        ) {
+            UsersScreen(navigateBack = navController::navigateUp)
         }
 
         fun unwrapSetting(obj: JSONObject, path: String = "") {
@@ -394,6 +405,7 @@ fun AppNavHost() {
 @Composable
 fun GamesDestination(
     navigateToSettings: () -> Unit,
+    navigateToUsers: () -> Unit,
     drawerState: androidx.compose.material3.DrawerState
 ) {
     val context = LocalContext.current
@@ -401,6 +413,11 @@ fun GamesDestination(
     // val prefs = remember { context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
     var emulatorState by remember { RPCSX.state }
     val emulatorActiveGame by remember { RPCSX.activeGame }
+    val activeUser by remember { UserRepository.activeUser }
+
+    LaunchedEffect(Unit) {
+        UserRepository.load()
+    }
 
     val installPkgLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -517,6 +534,18 @@ fun GamesDestination(
                                 )
                             )
                         }
+                    )
+
+                    NavigationDrawerItem(
+                        label = { Text("Users (Active: ${UserRepository.getUsername(activeUser)})") },
+                        selected = false,
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                null
+                            )
+                        },
+                        onClick = navigateToUsers
                     )
 
                     NavigationDrawerItem(
