@@ -268,33 +268,6 @@ static std::string fix_dir_path(std::string string) {
   return string;
 }
 
-jobject Int(JNIEnv *env, const std::map<std::string, std::string>& map) {
-    jclass mapClass = env->FindClass("java/util/HashMap");
-    if(mapClass == NULL)
-        return NULL;
-
-    jmethodID init = env->GetMethodID(mapClass, "<init>", "()V");
-    jobject hashMap = env->NewObject(mapClass, init);
-    jmethodID put = env->GetMethodID(mapClass, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
-
-    std::map<std::string, std::string>::const_iterator citr = map.begin();
-    for( ; citr != map.end(); ++citr) {
-        jstring keyJava = env->NewStringUTF(citr->first.c_str());
-        jstring valueJava = env->NewStringUTF(citr->second.c_str());
-
-        env->CallObjectMethod(hashMap, put, keyJava, valueJava);
-
-        env->DeleteLocalRef(keyJava);
-        env->DeleteLocalRef(valueJava);
-    }
-
-    jobject hashMapGobal = static_cast<jobject>(env->NewGlobalRef(hashMap));
-    env->DeleteLocalRef(hashMap);
-    env->DeleteLocalRef(mapClass);
-
-    return hashMapGobal;
-}
-
 enum class FileType {
   Unknown,
   Pup,
