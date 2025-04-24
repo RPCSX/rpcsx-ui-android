@@ -48,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.viewinterop.AndroidView
 import net.rpcsx.RPCSXTheme
@@ -246,17 +247,26 @@ fun ControlPanel(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(4.dp)
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), RoundedCornerShape(50))
+                IconButton(onClick = {}, modifier = Modifier.alpha(0f)) {
+		    Icon(Icons.Default.Close, contentDescription = "Disabled Button")
+                }
+                Text(
+                    text = "Control Panel",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleLarge
                 )
                 IconButton(onClick = onCloseClick) {
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.error)
                 }
             }
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), RoundedCornerShape(50))
+            )
             Spacer(modifier = Modifier.height(5.dp))
             
             Text(
