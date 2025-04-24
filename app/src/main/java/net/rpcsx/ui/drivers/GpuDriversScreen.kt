@@ -475,12 +475,17 @@ fun DownloadDriver(
             if (!driverFile.exists()) driverFile.createNewFile()
 
             val result =
-                GitHub.downloadAsset(chosenUrl, driverFile) { downloadedBytes, totalBytes ->
-                    if (totalBytes > 0) {
-                        isIndeterminate = false
-                        progress = downloadedBytes.toFloat() / totalBytes
-                    }
-                }
+                GitHub.downloadAsset(
+                    chosenUrl, 
+                    driverFile,       
+                    { downloadedBytes, totalBytes ->
+                        if (totalBytes > 0) {
+                            isIndeterminate = false
+                            progress = downloadedBytes.toFloat() / totalBytes
+                        }
+                    },
+                    4 // threads
+                ) 
 
             if (result is GitHub.DownloadStatus.Success) {
                 withContext(Dispatchers.Main) {
