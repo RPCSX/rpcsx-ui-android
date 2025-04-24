@@ -115,7 +115,7 @@ class GameRepository {
             }
         }
 
-        fun queue_refresh() {
+        fun queueRefresh() {
             needsRefresh = true
             if (!isRefreshing.value || isRefreshInCooldown) {
                 thread {
