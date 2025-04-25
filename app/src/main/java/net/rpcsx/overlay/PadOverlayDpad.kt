@@ -9,6 +9,8 @@ import androidx.core.content.edit
 import androidx.core.graphics.drawable.toDrawable
 import kotlin.math.roundToInt
 import net.rpcsx.utils.GeneralSettings
+import net.rpcsx.utils.GeneralSettings.boolean
+import net.rpcsx.utils.GeneralSettings.int
 
 private enum class DpadButton(val bit: Int) {
     Top(1 shl 0), Left(1 shl 1), Right(1 shl 2), Bottom(1 shl 3);
@@ -64,7 +66,7 @@ class PadOverlayDpad(
     var idleAlpha: Int = 255
     var dragging: Boolean = false
 
-    var enabled: Boolean = GeneralSettings["${inputId}_enabled"] as Boolean? ?: true
+    var enabled: Boolean = GeneralSettings["${inputId}_enabled"].boolean(true)
         set(value) {
             field = value
             GeneralSettings.setValue("${inputId}_enabled", value)
@@ -145,9 +147,9 @@ class PadOverlayDpad(
     }
 
     private fun loadSavedPosition() {
-        val x = GeneralSettings["${inputId}_x"] as Int? ?: area.left
-        val y = GeneralSettings["${inputId}_y"] as Int? ?: area.top
-        val scale = GeneralSettings["${inputId}_scale"] as Int? ?: -1
+        val x = GeneralSettings["${inputId}_x"].int(area.left)
+        val y = GeneralSettings["${inputId}_y"].int(area.top)
+        val scale = GeneralSettings["${inputId}_scale"].int(-1)
         updatePosition(x, y, force = true)
         if (scale != -1) setScale(scale)
     }
@@ -161,8 +163,9 @@ class PadOverlayDpad(
     fun getInfo(): Triple<String, Int, Int> {
         return Triple(
             "Dpad", 
-            GeneralSettings["${inputId}_scale"] as Int? ?: measureDefaultScale(), 
-            GeneralSettings["${inputId}_opacity"] as Int? ?: 50)
+            GeneralSettings["${inputId}_scale"].int(measureDefaultScale()), 
+            GeneralSettings["${inputId}_opacity"].int(50)
+        )
     }
 
     private fun updateBounds() {

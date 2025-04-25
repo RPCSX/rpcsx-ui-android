@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.view.MotionEvent
 import kotlin.math.roundToInt
 import net.rpcsx.utils.GeneralSettings
+import net.rpcsx.utils.GeneralSettings.boolean
 
 class PadOverlayButton(resources: Resources, image: Bitmap, private val digital1: Int, private val digital2: Int) : BitmapDrawable(resources, image) {
     private var pressed = false
@@ -19,7 +20,7 @@ class PadOverlayButton(resources: Resources, image: Bitmap, private val digital1
     var defaultSize: Pair<Int, Int> = Pair(-1, -1)
     lateinit var defaultPosition: Pair<Int, Int>
 
-    var enabled: Boolean = GeneralSettings["button_${digital1}_${digital2}_enabled"] as Boolean? ?: true
+    var enabled: Boolean = GeneralSettings["button_${digital1}_${digital2}_enabled"].boolean(true)
         set(value) {
             field = value
             GeneralSettings.setValue("button_${digital1}_${digital2}_enabled", value)

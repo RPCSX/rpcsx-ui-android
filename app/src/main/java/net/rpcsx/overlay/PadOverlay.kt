@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.VibrationEffect
 import android.os.VibratorManager
 import android.os.Vibrator
+import android.os.Build
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -23,6 +24,7 @@ import net.rpcsx.Digital1Flags
 import net.rpcsx.Digital2Flags
 import net.rpcsx.RPCSX
 import net.rpcsx.utils.GeneralSettings
+import net.rpcsx.utils.GeneralSettings.int
 import kotlin.math.min
 
 
@@ -46,6 +48,11 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
     private val floatingSticks = arrayOf<PadOverlayStick?>(null, null)
     private val sticks = mutableListOf<PadOverlayStick>()
     private val prefs by lazy { context!!.getSharedPreferences("PadOverlayPrefs", Context.MODE_PRIVATE) }
+    private val vibrator by lazy { 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            (context?.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager)?.defaultVibrator 
+        else context?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator 
+    }
     private var selectedInput: Any? = null
         set(value) {
             field = value
@@ -341,8 +348,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             }
         
             if (hit && GeneralSettings["haptic_feedback"] as Boolean? ?: true) {
-                val vm = context?.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-                vm?.defaultVibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
+                vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
             }
 
             if (force || !hit) {
@@ -486,10 +492,10 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         val resources = context!!.resources
         val bitmap = getBitmap(resourceId, width, height)
         val result = PadOverlayButton(resources, bitmap, digital1.bit, digital2.bit)
-        val scale = GeneralSettings["button_${digital1.bit}_${digital2.bit}_scale"] as Int? ?: 0
-        val alpha = GeneralSettings["button_${digital1.bit}_${digital2.bit}_opacity"] as Int? ?: 50
-        val savedX = GeneralSettings["button_${digital1.bit}_${digital2.bit}_x"] as Int? ?: x
-        val savedY = GeneralSettings["button_${digital1.bit}_${digital2.bit}_y"] as Int? ?: y
+        val scale = GeneralSettings["button_${digital1.bit}_${digital2.bit}_scale"].int(0)
+        val alpha = GeneralSettings["button_${digital1.bit}_${digital2.bit}_opacity"].int(50)
+        val savedX = GeneralSettings["button_${digital1.bit}_${digital2.bit}_x"].int(x)
+        val savedY = GeneralSettings["button_${digital1.bit}_${digital2.bit}_y"].int(y)
         result.setBounds(savedX, savedY, savedX + width, savedY + height)
         result.defaultPosition = Pair(x, y)
         result.defaultSize = Pair(height, width)
@@ -527,7 +533,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             multitouch
         )
 
-        val alpha = GeneralSettings["${inputId}_opacity"] as Int? ?: -1
+        val alpha = GeneralSettings["${inputId}_opacity"].int(-1)
         result.setOpacity(if (alpha != -1) alpha else 50)
         return result
     }

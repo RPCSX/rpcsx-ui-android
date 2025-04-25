@@ -74,6 +74,8 @@ import net.rpcsx.ui.channels.DefaultGpuDriverChannel
 import net.rpcsx.ui.settings.components.core.DeletableListItem
 import net.rpcsx.utils.DriversFetcher
 import net.rpcsx.utils.GitHub
+import net.rpcsx.utils.GeneralSettings
+import net.rpcsx.utils.GeneralSettings.string
 import net.rpcsx.utils.GpuDriverHelper
 import net.rpcsx.utils.GpuDriverInstallResult
 import java.io.File
@@ -85,7 +87,6 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
     val context = LocalContext.current
     var drivers by remember { mutableStateOf(GpuDriverHelper.getInstalledDrivers(context)) }
     var selectedDriver by remember { mutableStateOf<String?>(null) }
-    val prefs = remember { context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
     var isInstalling by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -127,13 +128,13 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
         }
     }
 
-    selectedDriver = prefs.getString("selected_gpu_driver", "Default")
+    selectedDriver = GeneralSettings["selected_gpu_driver"].string("Default")
 
     if (showDriverDialog) {
         DriverDialog(onDismiss = { showDriverDialog = false }, onInstallClick = {
             driverPickerLauncher.launch("application/zip")
         }, onImportClick = {
-            repoUrl = prefs.getString("gpu_driver_channel", DefaultGpuDriverChannel)
+            repoUrl = GeneralSettings["gpu_driver_channel"].string(DefaultGpuDriverChannel)
             shouldFetchAndShowDrivers = true
         })
     }
@@ -206,11 +207,7 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
                                 .padding(vertical = 4.dp)
                                 .clickable {
                                     selectedDriver = metadata.label
-                                    prefs.edit {
-                                        putString(
-                                            "selected_gpu_driver", selectedDriver ?: ""
-                                        )
-                                    }
+                                    GeneralSettings.setValue("selected_gpu_driver", selectedDriver ?: "")
 
                                     val path = if (metadata.name == "Default") "" else file.path
 

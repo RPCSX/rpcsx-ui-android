@@ -36,6 +36,26 @@ object GeneralSettings {
         }
     }
 
+    fun Any?.boolean(def: Boolean = false): Boolean {
+        return this as Boolean ?: def
+    }
+
+    fun Any?.string(def: String = ""): String {
+        return this as String ?: def
+    }
+
+    fun Any?.int(def: Int = 0): Int {
+        return this as Int ?: def
+    }
+
+    fun Any?.long(def: Long = 0L): Long {
+        return this as Long ?: def
+    }
+
+    fun Any?.float(def: Float = 0f): Float {
+        return this as Float ?: def
+    }
+
     operator fun set(key: String, value: Any?) {
         setValue(key, value)
     }
