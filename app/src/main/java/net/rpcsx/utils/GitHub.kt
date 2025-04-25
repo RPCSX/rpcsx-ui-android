@@ -18,6 +18,7 @@ import java.io.File
 import java.io.RandomAccessFile
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 object GitHub {
     const val server = "https://github.com/"
@@ -165,6 +166,7 @@ object GitHub {
             RandomAccessFile(destinationFile, "rw").setLength(contentLength)
 
             val chunkSize = contentLength / threadCount
+            val totalBytesRead = AtomicLong(0)
             val deferredList = (0 until threadCount).map { i ->
                 val start = i * chunkSize
                 val end = if (i == threadCount - 1) contentLength - 1 else (start + chunkSize - 1)
@@ -185,13 +187,12 @@ object GitHub {
                         raf.seek(start)
 
                         val buffer = ByteArray(32 * 1024)
-                        var total = 0L
                         var read: Int
 
                         while (inputStream.read(buffer).also { read = it } != -1) {
                             raf.write(buffer, 0, read)
-                            total += read
-                            progressCallback(total, contentLength)
+                            val bytesReadNow = totalBytesRead.addAndGet(read.toLong())
+                            progressCallback(bytesReadNow, contentLength)
                         }
 
                         raf.close()
