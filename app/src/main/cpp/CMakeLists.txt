@@ -7,7 +7,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE on)
 set(FFMPEG_VERSION 5.1)
 set(LLVM_VERSION 19.1)
 
-if (TEST_OVERRIDE_CPU)
+# workaround to enable x86_64 Android Emulator compatibility
+if (ANDROID AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
         set(ARCH_FLAGS "-mcpu=cortex-a53")
     else()
