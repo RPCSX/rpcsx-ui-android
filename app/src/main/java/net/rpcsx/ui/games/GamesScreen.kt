@@ -418,7 +418,7 @@ fun GamesScreen() {
         state = state,
         onRefresh = {
             if (gameInProgress == null && !isRefreshing) {
-                GameRepository.queue_refresh()
+                GameRepository.queueRefresh()
             }
         },
         indicator = {
