@@ -30,6 +30,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
@@ -77,6 +78,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.rpcsx.R
 import net.rpcsx.RPCSX
+import net.rpcsx.UserRepository
 import net.rpcsx.dialogs.AlertDialogQueue
 import net.rpcsx.provider.AppDataDocumentProvider
 import net.rpcsx.ui.common.ComposePreview
@@ -460,6 +462,8 @@ fun SettingsScreen(
     navigateTo: (path: String) -> Unit,
 ) {
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val activeUser by remember { UserRepository.activeUser }
+
     Scaffold(
         modifier = Modifier
             .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
@@ -495,8 +499,25 @@ fun SettingsScreen(
                     description = "Open internal directory of RPCSX in file manager"
                 ) {
                     if (!FileUtil.launchInternalDir(context)) {
-                        AlertDialogQueue.showDialog("View Internal Directory Error",  "No Activity found to handle this action")
+                        AlertDialogQueue.showDialog(
+                            "View Internal Directory Error",
+                            "No Activity found to handle this action"
+                        )
                     }
+                }
+            }
+
+            item(
+                key = "users"
+            ) {
+                HomePreference(
+                    title = "Users",
+                    description = "Active User: ${UserRepository.getUsername(activeUser)}",
+                    icon = {
+                        PreferenceIcon(icon = Icons.Default.Person)
+                    }
+                ) {
+                    navigateTo("users")
                 }
             }
 
@@ -542,7 +563,11 @@ fun SettingsScreen(
             }
 
             item(key = "controls") {
-                HomePreference(title = "Controls", icon = { Icon(imageVector = Icons.Default.Settings, null) }, description = "Configure controller") {
+                HomePreference(
+                    title = "Controls",
+                    icon = { Icon(imageVector = Icons.Default.Settings, null) },
+                    description = "Configure controller"
+                ) {
                     navigateTo("controls")
                 }
             }
@@ -602,9 +627,11 @@ fun ControllerSettings(
         }
     ) { contentPadding ->
         val context = LocalContext.current
-        val inputBindings = remember { mutableStateMapOf<Int, Pair<Int, Int>>().apply { 
-            putAll(InputBindingPrefs.loadBindings())
-        } }
+        val inputBindings = remember {
+            mutableStateMapOf<Int, Pair<Int, Int>>().apply {
+                putAll(InputBindingPrefs.loadBindings())
+            }
+        }
 
         var showDialog by remember { mutableStateOf<Boolean>(false) }
         var currentInput by remember { mutableStateOf<Int>(-1) }
@@ -615,7 +642,7 @@ fun ControllerSettings(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding),
-        ) {    
+        ) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -625,9 +652,13 @@ fun ControllerSettings(
             }
 
             item {
-                var itemValue by remember { mutableStateOf(GeneralSettings["haptic_feedback"] as Boolean? ?: true) }
+                var itemValue by remember {
+                    mutableStateOf(
+                        GeneralSettings["haptic_feedback"] as Boolean? ?: true
+                    )
+                }
                 val def = true
-                SwitchPreference (
+                SwitchPreference(
                     checked = itemValue,
                     title = "Enable Haptic Feedback" + if (itemValue == def) "" else " *",
                     leadingIcon = null,
@@ -650,33 +681,48 @@ fun ControllerSettings(
                 .sortedBy { (_, value) ->
                     val name = InputBindingPrefs.rpcsxKeyCodeToString(value.first, value.second)
                     InputBindingPrefs.defaultBindings.values.indexOfFirst { defValue ->
-                        InputBindingPrefs.rpcsxKeyCodeToString(defValue.first, defValue.second) == name
+                        InputBindingPrefs.rpcsxKeyCodeToString(
+                            defValue.first,
+                            defValue.second
+                        ) == name
                     }
                 }
                 .forEach { binding ->
                     item {
                         RegularPreference(
-                            title = InputBindingPrefs.rpcsxKeyCodeToString(binding.second.first, binding.second.second),
-                            value = { 
+                            title = InputBindingPrefs.rpcsxKeyCodeToString(
+                                binding.second.first,
+                                binding.second.second
+                            ),
+                            value = {
                                 PreferenceValue(
-                                    text = if (binding.first.toString().length > 4) "NONE" else KeyEvent.keyCodeToString(binding.first)
-                                ) 
+                                    text = if (binding.first.toString().length > 4) "NONE" else KeyEvent.keyCodeToString(
+                                        binding.first
+                                    )
+                                )
                             },
                             onClick = {
                                 currentInput = binding.first
-                                currentInputName = InputBindingPrefs.rpcsxKeyCodeToString(binding.second.first, binding.second.second)
+                                currentInputName = InputBindingPrefs.rpcsxKeyCodeToString(
+                                    binding.second.first,
+                                    binding.second.second
+                                )
                                 showDialog = true
                             }
                         )
                     }
-                }    
+                }
         }
 
         if (showDialog) {
             InputBindingDialog(
                 onReset = {
                     InputBindingPrefs.defaultBindings.forEach { it ->
-                        if (InputBindingPrefs.rpcsxKeyCodeToString(it.value.first, it.value.second) == currentInputName) {
+                        if (InputBindingPrefs.rpcsxKeyCodeToString(
+                                it.value.first,
+                                it.value.second
+                            ) == currentInputName
+                        ) {
                             inputBindings[currentInput]?.let { value ->
                                 inputBindings.remove(currentInput)
                                 inputBindings[it.key] = value
@@ -697,8 +743,8 @@ fun ControllerSettings(
                                     }
                                 }
                                 inputBindings[currentInput]?.let { value ->
-                                     inputBindings.remove(currentInput)
-                                     inputBindings[keyEvent.nativeKeyEvent.keyCode] = value
+                                    inputBindings.remove(currentInput)
+                                    inputBindings[keyEvent.nativeKeyEvent.keyCode] = value
                                 }
                                 InputBindingPrefs.saveBindings(inputBindings.toMap())
                                 showDialog = false
@@ -708,9 +754,9 @@ fun ControllerSettings(
                     }
                     .focusRequester(requester)
                     .focusable()
-                            
+
             )
-            
+
             LaunchedEffect(showDialog) {
                 requester.requestFocus()
             }

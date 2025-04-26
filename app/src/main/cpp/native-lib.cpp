@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <android/dlext.h>
 #include <android/log.h>
 #include <dlfcn.h>
 #include <jni.h>
@@ -8,6 +9,11 @@
 #include <sys/resource.h>
 #include <unistd.h>
 #include <utility>
+
+#if defined(__aarch64__)
+#include <adrenotools/driver.h>
+#include <adrenotools/priv.h>
+#endif
 
 struct RPCSXApi {
   bool (*overlayPadData)(int digital1, int digital2, int leftStickX,
@@ -38,6 +44,7 @@ struct RPCSXApi {
   std::string (*settingsGet)(std::string_view path);
   bool (*settingsSet)(std::string_view path, std::string_view valueString);
   std::string (*getVersion)();
+  void *(*setCustomDriver)(void *driverHandle);
 };
 
 struct RPCSXLibrary : RPCSXApi {
@@ -99,6 +106,7 @@ struct RPCSXLibrary : RPCSXApi {
     result.settingsGet = reinterpret_cast<decltype(settingsGet)>(dlsym(handle, "_rpcsx_settingsGet"));
     result.settingsSet = reinterpret_cast<decltype(settingsSet)>(dlsym(handle, "_rpcsx_settingsSet"));
     result.getVersion = reinterpret_cast<decltype(getVersion)>(dlsym(handle, "_rpcsx_getVersion"));
+    result.setCustomDriver = reinterpret_cast<decltype(setCustomDriver)>(dlsym(handle, "_rpcsx_setCustomDriver"));
     // clang-format on
 
     return result;
@@ -273,4 +281,41 @@ Java_net_rpcsx_RPCSX_supportsCustomDriverLoading(JNIEnv *env,
 extern "C" JNIEXPORT jstring JNICALL
 Java_net_rpcsx_RPCSX_getVersion(JNIEnv *env, jobject) {
   return wrap(env, rpcsxLib.getVersion());
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_net_rpcsx_RPCSX_setCustomDriver(JNIEnv *env, jobject, jstring jpath,
+                                     jstring jlibraryName, jstring jhookDir) {
+  if (rpcsxLib.setCustomDriver == nullptr) {
+    return false;
+  }
+
+  auto path = unwrap(env, jpath);
+  void *loader = nullptr;
+
+  if (!path.empty()) {
+      auto hookDir = unwrap(env, jhookDir);
+      auto libraryName = unwrap(env, jlibraryName);
+      __android_log_print(ANDROID_LOG_INFO, "RPCSX-UI", "Loading custom driver %s",
+                          path.c_str());
+
+      ::dlerror();
+      loader = adrenotools_open_libvulkan(
+              RTLD_NOW, ADRENOTOOLS_DRIVER_CUSTOM, nullptr, (hookDir + "/").c_str(),
+              (path + "/").c_str(), libraryName.c_str(), nullptr, nullptr);
+
+      if (loader == nullptr) {
+          __android_log_print(ANDROID_LOG_INFO, "RPCSX-UI",
+                              "Failed to load custom driver at '%s': %s",
+                              path.c_str(), ::dlerror());
+          return false;
+      }
+  }
+
+  auto prevLoader = rpcsxLib.setCustomDriver(loader);
+  if (prevLoader != nullptr) {
+    ::dlclose(prevLoader);
+  }
+
+  return true;
 }

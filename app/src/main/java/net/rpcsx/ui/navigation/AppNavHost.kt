@@ -29,7 +29,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Info
@@ -167,7 +166,6 @@ fun AppNavHost() {
     if (rpcsxLibrary == null) {
         GamesDestination(
             navigateToSettings = { },
-            navigateToUsers = { },
             drawerState
         )
 
@@ -185,7 +183,6 @@ fun AppNavHost() {
         ) {
             GamesDestination(
                 navigateToSettings = { navController.navigate("settings") },
-                navigateToUsers = { navController.navigate("users") },
                 drawerState
             )
         }
@@ -446,7 +443,6 @@ fun AppNavHost() {
 @Composable
 fun GamesDestination(
     navigateToSettings: () -> Unit,
-    navigateToUsers: () -> Unit,
     drawerState: androidx.compose.material3.DrawerState
 ) {
     val context = LocalContext.current
@@ -454,7 +450,6 @@ fun GamesDestination(
     // val prefs = remember { context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
     var emulatorState by remember { RPCSX.state }
     val emulatorActiveGame by remember { RPCSX.activeGame }
-    val activeUser by remember { UserRepository.activeUser }
     val rpcsxLibrary by remember { RPCSX.activeLibrary }
 
     if (rpcsxLibrary == null) {
@@ -581,18 +576,6 @@ fun GamesDestination(
                                 )
                             )
                         }
-                    )
-
-                    NavigationDrawerItem(
-                        label = { Text("Users (Active: ${UserRepository.getUsername(activeUser)})") },
-                        selected = false,
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                null
-                            )
-                        },
-                        onClick = navigateToUsers
                     )
 
                     NavigationDrawerItem(

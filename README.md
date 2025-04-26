@@ -17,7 +17,7 @@ If you want to contribute as a developer, please contact us in the [Discord](htt
 
 ## Requirements
 
-Android 12+
+Android 10+
 
 
 ## License

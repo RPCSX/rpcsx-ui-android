@@ -14,6 +14,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.security.InvalidParameterException
+import kotlin.concurrent.thread
 
 enum class GameFlag {
     Locked,
@@ -84,6 +85,10 @@ class GameRepository {
     companion object {
         private val instance = GameRepository()
 
+        private var needsRefresh = false
+        val isRefreshing = mutableStateOf(false)
+        private var isRefreshInCooldown = false
+
         fun save() {
             try {
                 File(RPCSX.rootDirectory + "games.json").writeText(Json.encodeToString(instance.games.map { game ->
@@ -110,7 +115,26 @@ class GameRepository {
             }
         }
 
-        fun refresh() {
+        fun queueRefresh() {
+            needsRefresh = true
+            if (!isRefreshing.value || isRefreshInCooldown) {
+                thread {
+                    isRefreshing.value = true
+                    do {
+                        needsRefresh = false
+                        refresh()
+                    } while (needsRefresh)
+                    isRefreshInCooldown = true
+                    Thread.sleep(300)
+                    if (!needsRefresh) {
+                        isRefreshInCooldown = false
+                        isRefreshing.value = false
+                    }
+                }
+            }
+        }
+
+        private fun refresh() {
             clear()
             RPCSX.instance.collectGameInfo(
                 RPCSX.rootDirectory + "/config/dev_hdd0/game", -1

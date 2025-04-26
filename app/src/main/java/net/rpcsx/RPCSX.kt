@@ -97,6 +97,7 @@ class RPCSX {
     external fun isInstallableFile(fd: Int) : Boolean
     external fun getDirInstallPath(sfoFd: Int) : String?
     external fun getVersion(): String
+    external fun setCustomDriver(path: String, libraryName: String, hookDir: String): Boolean
 
 
     companion object {

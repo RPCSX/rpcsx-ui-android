@@ -1,3 +1,6 @@
 [submodule "app/src/main/cpp/rpcsx"]
 	path = app/src/main/cpp/rpcsx
 	url = ../../RPCSX/rpcsx.git
+[submodule "app/src/main/cpp/libadrenotools"]
+	path = app/src/main/cpp/libadrenotools
+	url = ../../bylaws/libadrenotools.git

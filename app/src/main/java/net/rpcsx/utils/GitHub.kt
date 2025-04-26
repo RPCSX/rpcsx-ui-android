@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.core.content.edit
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -13,8 +15,10 @@ import okhttp3.*
 import okio.buffer
 import okio.sink
 import java.io.File
+import java.io.RandomAccessFile
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 object GitHub {
     const val server = "https://github.com/"
@@ -147,40 +151,60 @@ object GitHub {
     }
 
     suspend fun downloadAsset(
-        assetUrl: String, destinationFile: File, progressCallback: (Long, Long) -> Unit
+        assetUrl: String,
+        destinationFile: File,
+        progressCallback: (Long, Long) -> Unit,
+        threadCount: Int = 4
     ): DownloadStatus = withContext(Dispatchers.IO) {
-        Log.w("GitHub", "Downloading asset $assetUrl")
-        val request = Request.Builder().url(assetUrl).build()
-
         try {
+            val request = Request.Builder().url(assetUrl).head().build()
             val response = client.newCall(request).execute()
-            if (!response.isSuccessful || response.body == null) {
-                return@withContext DownloadStatus.Error("Download failed: ${response.message}")
-            }
+            val contentLength = response.header("Content-Length")?.toLongOrNull() ?: return@withContext DownloadStatus.Error("Unable to get file size")
+            val supportsRange = response.header("Accept-Ranges") == "bytes"
+            if (!supportsRange) return@withContext DownloadStatus.Error("Server does not support range requests")
 
-            val contentLength = response.body!!.contentLength()
-            var totalBytes = 0L
+            RandomAccessFile(destinationFile, "rw").setLength(contentLength)
 
-            destinationFile.sink().buffer().use { sink ->
-                val source = response.body!!.source()
-                val buffer = okio.Buffer()
-                var read: Long
+            val chunkSize = contentLength / threadCount
+            val totalBytesRead = AtomicLong(0)
+            val deferredList = (0 until threadCount).map { i ->
+                val start = i * chunkSize
+                val end = if (i == threadCount - 1) contentLength - 1 else (start + chunkSize - 1)
 
-                while (source.read(buffer, 8192).also { read = it } != -1L) {
-                    sink.write(buffer, read)
-                    totalBytes += read
-                    progressCallback(totalBytes, contentLength)
+                async(Dispatchers.IO) {
+                    val partRequest = Request.Builder()
+                        .url(assetUrl)
+                        .addHeader("Range", "bytes=$start-$end")
+                        .build()
+
+                    client.newCall(partRequest).execute().use { partResponse ->
+                        if (!partResponse.isSuccessful || partResponse.body == null) {
+                            throw IOException("Part $i failed")
+                        }
+
+                        val inputStream = partResponse.body!!.byteStream()
+                        val raf = RandomAccessFile(destinationFile, "rw")
+                        raf.seek(start)
+
+                        val buffer = ByteArray(32 * 1024)
+                        var read: Int
+
+                        while (inputStream.read(buffer).also { read = it } != -1) {
+                            raf.write(buffer, 0, read)
+                            val bytesReadNow = totalBytesRead.addAndGet(read.toLong())
+                            progressCallback(bytesReadNow, contentLength)
+                        }
+
+                        raf.close()
+                    }
                 }
             }
 
-            if (totalBytes != contentLength && contentLength != -1L) {
-                DownloadStatus.Error("Download incomplete")
-            } else {
-                DownloadStatus.Success
-            }
+            deferredList.awaitAll()
+            return@withContext DownloadStatus.Success
         } catch (e: Exception) {
-            Log.e("GitHub", "Error downloading asset", e)
-            DownloadStatus.Error(e.message)
+            Log.e("GitHub", "Parallel download failed", e)
+            return@withContext DownloadStatus.Error(e.message ?: "Unknown error")
         }
     }
 }

@@ -69,7 +69,7 @@ object RpcsxUpdater {
                 }
             }
             is GitHub.FetchResult.Error -> {
-                AlertDialogQueue.showDialog("Check For RPCSX Updates Error", fetchResult.message)
+//                AlertDialogQueue.showDialog("Check For RPCSX Updates Error", fetchResult.message)
             }
         }
 

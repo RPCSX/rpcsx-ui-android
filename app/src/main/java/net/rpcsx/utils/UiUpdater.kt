@@ -46,7 +46,7 @@ object UiUpdater {
                 }
             }
             is GitHub.FetchResult.Error -> {
-                AlertDialogQueue.showDialog("Check For UI Updates Error", fetchResult.message)
+//                AlertDialogQueue.showDialog("Check For UI Updates Error", fetchResult.message)
             }
         }
 

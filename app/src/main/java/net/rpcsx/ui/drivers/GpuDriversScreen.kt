@@ -70,9 +70,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.rpcsx.RPCSX
+import net.rpcsx.dialogs.AlertDialogQueue
 import net.rpcsx.ui.channels.DefaultGpuDriverChannel
 import net.rpcsx.ui.settings.components.core.DeletableListItem
 import net.rpcsx.utils.DriversFetcher
+import net.rpcsx.utils.GeneralSettings
 import net.rpcsx.utils.GitHub
 import net.rpcsx.utils.GeneralSettings
 import net.rpcsx.utils.GeneralSettings.string
@@ -206,19 +208,23 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp)
                                 .clickable {
-                                    selectedDriver = metadata.label
-                                    GeneralSettings.setValue("selected_gpu_driver", selectedDriver ?: "")
-
                                     val path = if (metadata.name == "Default") "" else file.path
 
-                                    Log.e("Driver", "path $path, internal data dir ${context.filesDir}")
-                                    RPCSX.instance.settingsSet(
-                                        "Video@@Vulkan@@Custom Driver@@Path", "\"" + path + "\""
-                                    )
-                                    RPCSX.instance.settingsSet(
-                                        "Video@@Vulkan@@Custom Driver@@Internal Data Directory",
-                                        "\"" + context.filesDir + "\""
-                                    )
+                                    Log.w("Driver", "path $path, internal data dir ${context.filesDir}")
+                                    if (!RPCSX.instance.setCustomDriver(path, metadata.libraryName, RPCSX.nativeLibDirectory)) {
+                                        AlertDialogQueue.showDialog("Custom Driver Error", "Failed to load selected driver")
+                                    } else {
+                                        selectedDriver = metadata.label
+
+                                        prefs.edit {
+                                            putString(
+                                                "selected_gpu_driver", selectedDriver ?: ""
+                                            )
+                                        }
+
+                                        GeneralSettings["gpu_driver_path"] = path
+                                        GeneralSettings["gpu_driver_name"] = metadata.libraryName
+                                    }
                                 },
                             colors = CardDefaults.cardColors(
                                 containerColor = if (metadata.label == selectedDriver) {
@@ -472,12 +478,17 @@ fun DownloadDriver(
             if (!driverFile.exists()) driverFile.createNewFile()
 
             val result =
-                GitHub.downloadAsset(chosenUrl, driverFile) { downloadedBytes, totalBytes ->
-                    if (totalBytes > 0) {
-                        isIndeterminate = false
-                        progress = downloadedBytes.toFloat() / totalBytes
-                    }
-                }
+                GitHub.downloadAsset(
+                    chosenUrl, 
+                    driverFile,       
+                    { downloadedBytes, totalBytes ->
+                        if (totalBytes > 0) {
+                            isIndeterminate = false
+                            progress = downloadedBytes.toFloat() / totalBytes
+                        }
+                    },
+                    4 // threads
+                ) 
 
             if (result is GitHub.DownloadStatus.Success) {
                 withContext(Dispatchers.Main) {

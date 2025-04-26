@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
@@ -65,6 +66,7 @@ class MainActivity : ComponentActivity() {
                     GeneralSettings["rpcsx_prev_installed_arch"] = null
                     GeneralSettings["rpcsx_prev_library"] = null
                     GeneralSettings["rpcsx_bad_version"] = RpcsxUpdater.getFileVersion(File(rpcsxLibrary))
+                    GeneralSettings.sync()
 
                     File(rpcsxLibrary).delete()
                     rpcsxLibrary = rpcsxPrevLibrary
@@ -72,6 +74,7 @@ class MainActivity : ComponentActivity() {
                     AlertDialogQueue.showDialog("RPCSX Update Failed", "Failed to load new version, previous version was restored")
                 } else if (rpcsxUpdateStatus == null) {
                     GeneralSettings["rpcsx_update_status"] = false
+                    GeneralSettings.sync()
                 }
 
                 RPCSX.openLibrary(rpcsxLibrary)
@@ -82,15 +85,18 @@ class MainActivity : ComponentActivity() {
             RPCSX.nativeLibDirectory = nativeLibraryDir
 
             if (RPCSX.activeLibrary.value != null) {
+                RPCSX.instance.initialize(RPCSX.rootDirectory, UserRepository.getUserFromSettings())
+                val gpuDriverPath = GeneralSettings["gpu_driver_path"] as? String
+                val gpuDriverName = GeneralSettings["gpu_driver_name"] as? String
+
+                if (gpuDriverPath != null && gpuDriverName != null) {
+                    RPCSX.instance.setCustomDriver(gpuDriverPath, gpuDriverName, nativeLibraryDir)
+                }
+
                 lifecycleScope.launch {
                     UserRepository.load()
                 }
 
-                RPCSX.instance.initialize(RPCSX.rootDirectory, UserRepository.getUserFromSettings())
-                RPCSX.instance.settingsSet(
-                    "Video@@Vulkan@@Custom Driver@@Hook Directory",
-                    "\"" + nativeLibraryDir + "\""
-                )
                 RPCSX.initialized = true
 
                 thread {
@@ -103,9 +109,13 @@ class MainActivity : ComponentActivity() {
 
                 GeneralSettings["rpcsx_update_status"] = true
                 if (rpcsxPrevLibrary != null) {
-                    File(rpcsxPrevLibrary).delete()
+                    if (rpcsxLibrary != rpcsxPrevLibrary) {
+                        File(rpcsxPrevLibrary).delete()
+                    }
+
                     GeneralSettings["rpcsx_prev_library"] = null
                     GeneralSettings["rpcsx_prev_installed_arch"] = null
+                    GeneralSettings.sync()
                 }
             }
 
