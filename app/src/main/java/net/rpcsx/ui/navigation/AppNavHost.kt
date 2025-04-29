@@ -30,7 +30,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -515,7 +514,7 @@ fun GamesDestination(
                             )
                         },
                         selected = false,
-                        icon = { Icon(Icons.Outlined.Build, contentDescription = null) },
+                        icon = { Icon(painterResource(R.drawable.hard_drive), contentDescription = null) },
                         badge = {
                             val progressChannel = FirmwareRepository.progressChannel
                             val progress = ProgressRepository.getItem(progressChannel.value)
@@ -581,7 +580,7 @@ fun GamesDestination(
                     NavigationDrawerItem(
                         label = { Text("System Info") },
                         selected = false,
-                        icon = { Icon(Icons.Outlined.Info, contentDescription = null) },
+                        icon = { Icon(painterResource(R.drawable.memory), contentDescription = null) },
                         onClick = {
                             AlertDialogQueue.showDialog(
                                 "System Info",

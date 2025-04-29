@@ -32,9 +32,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -534,7 +532,7 @@ fun SettingsScreen(
             item(key = "advanced_settings") {
                 HomePreference(
                     title = "Advanced Settings",
-                    icon = { Icon(imageVector = Icons.Default.Settings, null) },
+                    icon = { Icon(painterResource(R.drawable.tune), null) },
                     description = "Configure emulator advanced settings"
                 ) {
                     navigateTo("settings@@$")
@@ -546,7 +544,7 @@ fun SettingsScreen(
             ) {
                 HomePreference(
                     title = "Custom GPU Driver",
-                    icon = { Icon(Icons.Outlined.Build, contentDescription = null) },
+                    icon = { Icon(painterResource(R.drawable.add_diamond), contentDescription = null) },
                     description = "Install alternative drivers for potentially better performance or accuracy"
                 ) {
                     if (RPCSX.instance.supportsCustomDriverLoading()) {
@@ -565,7 +563,7 @@ fun SettingsScreen(
             item(key = "controls") {
                 HomePreference(
                     title = "Controls",
-                    icon = { Icon(imageVector = Icons.Default.Settings, null) },
+                    icon = { Icon(painterResource(R.drawable.gamepad), null) },
                     description = "Configure controller"
                 ) {
                     navigateTo("controls")
