@@ -103,7 +103,7 @@ class PadOverlayDpad(
         dragging = false
     }
 
-    override fun setScale(percent: Int, centerX: Int = area.centerX(), centerY: Int = area.centerY()) {
+    fun setDpadScale(percent: Int, centerX: Int = area.centerX(), centerY: Int = area.centerY()) {
         val scaleFactor = percent / 100f
         val newWidth = (1024 * scaleFactor).roundToInt()
         val newHeight = (1024 * scaleFactor).roundToInt()
@@ -126,7 +126,7 @@ class PadOverlayDpad(
         GeneralSettings.setValue("${inputId}_y", area.top)
         GeneralSettings.setValue("${inputId}_scale", percent)
     }
-
+    override fun setScale(percent: Int) = setDpadScale(percent)
     override fun setOpacity(percent: Int) {
         idleAlpha = (255 * percent / 100).coerceIn(0, 255)
         GeneralSettings.setValue("${inputId}_opacity", percent)
@@ -151,7 +151,7 @@ class PadOverlayDpad(
         if (scale != -1) {
             val centerX = x + area.width() / 2
             val centerY = y + area.height() / 2
-            setScale(scale, centerX, centerY)
+            setDpadScale(scale, centerX, centerY)
         } else {
             updatePosition(x, y, true)
         }
