@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 project("rpcsx-android")
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_POSITION_INDEPENDENT_CODE on)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -march=armv8-a+simd+crypto -mtune=cortex-a715")
