@@ -9,278 +9,107 @@
 #include <sys/resource.h>
 #include <unistd.h>
 #include <utility>
+#include <vulkan/vulkan.h>
+#include <android/native_window_jni.h>
+#include <android/log.h>
 
-#if defined(__aarch64__)
-#include <adrenotools/driver.h>
-#include <adrenotools/priv.h>
-#endif
+#define LOG_TAG "RPCSX"
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-struct RPCSXApi {
-  bool (*overlayPadData)(int digital1, int digital2, int leftStickX,
-                         int leftStickY, int rightStickX, int rightStickY);
-  bool (*initialize)(std::string_view rootDir, std::string_view user);
-  bool (*processCompilationQueue)(JNIEnv *env);
-  bool (*startMainThreadProcessor)(JNIEnv *env);
-  bool (*collectGameInfo)(JNIEnv *env, std::string_view rootDir,
-                          long progressId);
-  void (*shutdown)();
-  int (*boot)(std::string_view path_);
-  int (*getState)();
-  void (*kill)();
-  void (*resume)();
-  void (*openHomeMenu)();
-  std::string (*getTitleId)();
-  bool (*surfaceEvent)(JNIEnv *env, jobject surface, jint event);
-  bool (*usbDeviceEvent)(int fd, int vendorId, int productId, int event);
-  bool (*installFw)(JNIEnv *env, int fd, long progressId);
-  bool (*isInstallableFile)(jint fd);
-  jstring (*getDirInstallPath)(JNIEnv *env, jint fd);
-  bool (*install)(JNIEnv *env, int fd, long progressId);
-  bool (*installKey)(JNIEnv *env, int fd, long progressId,
-                     std::string_view gamePath);
-  std::string (*systemInfo)();
-  void (*loginUser)(std::string_view userId);
-  std::string (*getUser)();
-  std::string (*settingsGet)(std::string_view path);
-  bool (*settingsSet)(std::string_view path, std::string_view valueString);
-  std::string (*getVersion)();
-  void *(*setCustomDriver)(void *driverHandle);
-};
+VkInstance instance;
+VkSurfaceKHR surface;
+VkPhysicalDevice physicalDevice;
+VkDevice device;
+VkQueue graphicsQueue;
 
-struct RPCSXLibrary : RPCSXApi {
-  void *handle = nullptr;
+ANativeWindow* window = nullptr;
 
-  RPCSXLibrary() = default;
-  RPCSXLibrary(const RPCSXLibrary &) = delete;
-  RPCSXLibrary(RPCSXLibrary &&other) { swap(other); }
-  RPCSXLibrary &operator=(RPCSXLibrary &&other) {
-    swap(other);
-    return *this;
-  }
-  ~RPCSXLibrary() {
-    if (handle) {
-      ::dlclose(handle);
-    }
-  }
+bool createVulkanInstance() {
+    VkApplicationInfo appInfo = {
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pApplicationName = "RPCSX",
+        .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+        .pEngineName = "RPCSX Engine",
+        .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+        .apiVersion = VK_API_VERSION_1_1,
+    };
 
-  void swap(RPCSXLibrary &other) noexcept {
-    std::swap(handle, other.handle);
-    std::swap(static_cast<RPCSXApi &>(*this), static_cast<RPCSXApi &>(other));
-  }
+    const char* extensions[] = { "VK_KHR_surface", "VK_KHR_android_surface" };
 
-  static std::optional<RPCSXLibrary> Open(const char *path) {
-    void *handle = ::dlopen(path, RTLD_LOCAL | RTLD_NOW);
-    if (handle == nullptr) {
-      __android_log_print(ANDROID_LOG_ERROR, "RPCSX-UI",
-                          "Failed to open RPCSX library at %s, error %s", path,
-                          ::dlerror());
-      return {};
+    VkInstanceCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pApplicationInfo = &appInfo,
+        .enabledExtensionCount = 2,
+        .ppEnabledExtensionNames = extensions,
+    };
+
+    return vkCreateInstance(&createInfo, nullptr, &instance) == VK_SUCCESS;
+}
+
+bool createAndroidSurface() {
+    VkAndroidSurfaceCreateInfoKHR surfaceCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+        .window = window
+    };
+
+    return vkCreateAndroidSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface) == VK_SUCCESS;
+}
+
+bool pickPhysicalDevice() {
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+    if (deviceCount == 0) return false;
+
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+    for (const auto& dev : devices) {
+        VkPhysicalDeviceProperties props;
+        vkGetPhysicalDeviceProperties(dev, &props);
+        physicalDevice = dev;
+        return true;
     }
 
-    RPCSXLibrary result;
-    result.handle = handle;
-
-    // clang-format off
-    result.overlayPadData = reinterpret_cast<decltype(overlayPadData)>(dlsym(handle, "_rpcsx_overlayPadData"));
-    result.initialize = reinterpret_cast<decltype(initialize)>(dlsym(handle, "_rpcsx_initialize"));
-    result.processCompilationQueue = reinterpret_cast<decltype(processCompilationQueue)>(dlsym(handle, "_rpcsx_processCompilationQueue"));
-    result.startMainThreadProcessor = reinterpret_cast<decltype(startMainThreadProcessor)>(dlsym(handle, "_rpcsx_startMainThreadProcessor"));
-    result.collectGameInfo = reinterpret_cast<decltype(collectGameInfo)>(dlsym(handle, "_rpcsx_collectGameInfo"));
-    result.shutdown = reinterpret_cast<decltype(shutdown)>(dlsym(handle, "_rpcsx_shutdown"));
-    result.boot = reinterpret_cast<decltype(boot)>(dlsym(handle, "_rpcsx_boot"));
-    result.getState = reinterpret_cast<decltype(getState)>(dlsym(handle, "_rpcsx_getState"));
-    result.kill = reinterpret_cast<decltype(kill)>(dlsym(handle, "_rpcsx_kill"));
-    result.resume = reinterpret_cast<decltype(resume)>(dlsym(handle, "_rpcsx_resume"));
-    result.openHomeMenu = reinterpret_cast<decltype(openHomeMenu)>(dlsym(handle, "_rpcsx_openHomeMenu"));
-    result.getTitleId = reinterpret_cast<decltype(getTitleId)>(dlsym(handle, "_rpcsx_getTitleId"));
-    result.surfaceEvent = reinterpret_cast<decltype(surfaceEvent)>(dlsym(handle, "_rpcsx_surfaceEvent"));
-    result.usbDeviceEvent = reinterpret_cast<decltype(usbDeviceEvent)>(dlsym(handle, "_rpcsx_usbDeviceEvent"));
-    result.installFw = reinterpret_cast<decltype(installFw)>(dlsym(handle, "_rpcsx_installFw"));
-    result.isInstallableFile = reinterpret_cast<decltype(isInstallableFile)>(dlsym(handle, "_rpcsx_isInstallableFile"));
-    result.getDirInstallPath = reinterpret_cast<decltype(getDirInstallPath)>(dlsym(handle, "_rpcsx_getDirInstallPath"));
-    result.install = reinterpret_cast<decltype(install)>(dlsym(handle, "_rpcsx_install"));
-    result.installKey = reinterpret_cast<decltype(installKey)>(dlsym(handle, "_rpcsx_installKey"));
-    result.systemInfo = reinterpret_cast<decltype(systemInfo)>(dlsym(handle, "_rpcsx_systemInfo"));
-    result.loginUser = reinterpret_cast<decltype(loginUser)>(dlsym(handle, "_rpcsx_loginUser"));
-    result.getUser = reinterpret_cast<decltype(getUser)>(dlsym(handle, "_rpcsx_getUser"));
-    result.settingsGet = reinterpret_cast<decltype(settingsGet)>(dlsym(handle, "_rpcsx_settingsGet"));
-    result.settingsSet = reinterpret_cast<decltype(settingsSet)>(dlsym(handle, "_rpcsx_settingsSet"));
-    result.getVersion = reinterpret_cast<decltype(getVersion)>(dlsym(handle, "_rpcsx_getVersion"));
-    result.setCustomDriver = reinterpret_cast<decltype(setCustomDriver)>(dlsym(handle, "_rpcsx_setCustomDriver"));
-    // clang-format on
-
-    return result;
-  }
-};
-
-static RPCSXLibrary rpcsxLib;
-
-static std::string unwrap(JNIEnv *env, jstring string) {
-  auto resultBuffer = env->GetStringUTFChars(string, nullptr);
-  std::string result(resultBuffer);
-  env->ReleaseStringUTFChars(string, resultBuffer);
-  return result;
-}
-static jstring wrap(JNIEnv *env, const std::string &string) {
-  return env->NewStringUTF(string.c_str());
-}
-static jstring wrap(JNIEnv *env, const char *string) {
-  return env->NewStringUTF(string);
+    return false;
 }
 
-extern "C" JNIEXPORT jboolean JNICALL
-Java_net_rpcsx_RPCSX_openLibrary(JNIEnv *env, jobject, jstring path) {
-  if (auto library = RPCSXLibrary::Open(unwrap(env, path).c_str())) {
-    rpcsxLib = std::move(*library);
+bool createLogicalDevice() {
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilies.data());
+
+    int graphicsFamily = -1;
+    for (uint32_t i = 0; i < queueFamilyCount; i++) {
+        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            graphicsFamily = i;
+            break;
+        }
+    }
+
+    if (graphicsFamily == -1) return false;
+
+    float queuePriority = 1.0f;
+    VkDeviceQueueCreateInfo queueCreateInfo = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .queueFamilyIndex = static_cast<uint32_t>(graphicsFamily),
+        .queueCount = 1,
+        .pQueuePriorities = &queuePriority,
+    };
+
+    VkDeviceCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .queueCreateInfoCount = 1,
+        .pQueueCreateInfos = &queueCreateInfo,
+    };
+
+    if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
+        return false;
+
+    vkGetDeviceQueue(device, graphicsFamily, 0, &graphicsQueue);
     return true;
-  }
-
-  return false;
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_net_rpcsx_RPCSX_getLibraryVersion(JNIEnv *env, jobject, jstring path) {
-  if (auto library = RPCSXLibrary::Open(unwrap(env, path).c_str())) {
-    if (auto getVersion = library->getVersion) {
-      return wrap(env, getVersion());
-    }
-  }
-
-  return {};
-}
-
-extern "C" JNIEXPORT jboolean JNICALL Java_net_rpcsx_RPCSX_overlayPadData(
-    JNIEnv *, jobject, jint digital1, jint digital2, jint leftStickX,
-    jint leftStickY, jint rightStickX, jint rightStickY) {
-  return rpcsxLib.overlayPadData(digital1, digital2, leftStickX, leftStickY,
-                                 rightStickX, rightStickY);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL Java_net_rpcsx_RPCSX_initialize(
-    JNIEnv *env, jobject, jstring rootDir, jstring user) {
-  return rpcsxLib.initialize(unwrap(env, rootDir), unwrap(env, user));
-}
-
-extern "C" JNIEXPORT jboolean JNICALL
-Java_net_rpcsx_RPCSX_processCompilationQueue(JNIEnv *env, jobject) {
-  return rpcsxLib.processCompilationQueue(env);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL
-Java_net_rpcsx_RPCSX_startMainThreadProcessor(JNIEnv *env, jobject) {
-  return rpcsxLib.startMainThreadProcessor(env);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL Java_net_rpcsx_RPCSX_collectGameInfo(
-    JNIEnv *env, jobject, jstring jrootDir, jlong progressId) {
-  return rpcsxLib.collectGameInfo(env, unwrap(env, jrootDir), progressId);
-}
-
-extern "C" JNIEXPORT void JNICALL Java_net_rpcsx_RPCSX_shutdown(JNIEnv *env,
-                                                                jobject) {
-  return rpcsxLib.shutdown();
-}
-
-extern "C" JNIEXPORT jint JNICALL Java_net_rpcsx_RPCSX_boot(JNIEnv *env,
-                                                            jobject,
-                                                            jstring jpath) {
-  return rpcsxLib.boot(unwrap(env, jpath));
-}
-
-extern "C" JNIEXPORT jint JNICALL Java_net_rpcsx_RPCSX_getState(JNIEnv *env,
-                                                                jobject) {
-  return rpcsxLib.getState();
-}
-
-extern "C" JNIEXPORT void JNICALL Java_net_rpcsx_RPCSX_kill(JNIEnv *env,
-                                                            jobject) {
-  return rpcsxLib.kill();
-}
-
-extern "C" JNIEXPORT void JNICALL Java_net_rpcsx_RPCSX_resume(JNIEnv *env,
-                                                              jobject) {
-  return rpcsxLib.resume();
-}
-
-extern "C" JNIEXPORT void JNICALL Java_net_rpcsx_RPCSX_openHomeMenu(JNIEnv *env,
-                                                                    jobject) {
-  return rpcsxLib.openHomeMenu();
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_net_rpcsx_RPCSX_getTitleId(JNIEnv *env, jobject) {
-  return wrap(env, rpcsxLib.getTitleId());
-}
-
-extern "C" JNIEXPORT jboolean JNICALL Java_net_rpcsx_RPCSX_surfaceEvent(
-    JNIEnv *env, jobject, jobject surface, jint event) {
-  return rpcsxLib.surfaceEvent(env, surface, event);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL Java_net_rpcsx_RPCSX_usbDeviceEvent(
-    JNIEnv *env, jobject, jint fd, jint vendorId, jint productId, jint event) {
-  return rpcsxLib.usbDeviceEvent(fd, vendorId, productId, event);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL Java_net_rpcsx_RPCSX_installFw(
-    JNIEnv *env, jobject, jint fd, jlong progressId) {
-  return rpcsxLib.installFw(env, fd, progressId);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL
-Java_net_rpcsx_RPCSX_isInstallableFile(JNIEnv *env, jobject, jint fd) {
-  return rpcsxLib.isInstallableFile(fd);
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_net_rpcsx_RPCSX_getDirInstallPath(JNIEnv *env, jobject, jint fd) {
-  return rpcsxLib.getDirInstallPath(env, fd);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL
-Java_net_rpcsx_RPCSX_install(JNIEnv *env, jobject, jint fd, jlong progressId) {
-  return rpcsxLib.install(env, fd, progressId);
-}
-
-extern "C" JNIEXPORT jboolean JNICALL Java_net_rpcsx_RPCSX_installKey(
-    JNIEnv *env, jobject, jint fd, jlong progressId, jstring gamePath) {
-  return rpcsxLib.installKey(env, fd, progressId, unwrap(env, gamePath));
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_net_rpcsx_RPCSX_systemInfo(JNIEnv *env, jobject) {
-  return wrap(env, rpcsxLib.systemInfo());
-}
-
-extern "C" JNIEXPORT void JNICALL
-Java_net_rpcsx_RPCSX_loginUser(JNIEnv *env, jobject, jstring user_id) {
-  return rpcsxLib.loginUser(unwrap(env, user_id));
-}
-
-extern "C" JNIEXPORT jstring JNICALL Java_net_rpcsx_RPCSX_getUser(JNIEnv *env,
-                                                                  jobject) {
-  return wrap(env, rpcsxLib.getUser());
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_net_rpcsx_RPCSX_settingsGet(JNIEnv *env, jobject, jstring jpath) {
-  return wrap(env, rpcsxLib.settingsGet(unwrap(env, jpath)));
-}
-
-extern "C" JNIEXPORT jboolean JNICALL Java_net_rpcsx_RPCSX_settingsSet(
-    JNIEnv *env, jobject, jstring jpath, jstring jvalue) {
-  return rpcsxLib.settingsSet(unwrap(env, jpath), unwrap(env, jvalue));
-}
-
-extern "C" JNIEXPORT jboolean JNICALL
-Java_net_rpcsx_RPCSX_supportsCustomDriverLoading(JNIEnv *env,
-                                                 jobject instance) {
-  return access("/dev/kgsl-3d0", F_OK) == 0;
-}
-
-extern "C" JNIEXPORT jstring JNICALL
-Java_net_rpcsx_RPCSX_getVersion(JNIEnv *env, jobject) {
-  return wrap(env, rpcsxLib.getVersion());
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
