@@ -33,7 +33,7 @@ object AlertDialogQueue {
 
     fun showDialog(
         title: String,
-        message: String,
+        message: String? = null,
         onConfirm: () -> Unit = {},
         onDismiss: (() -> Unit)? = null,
         confirmText: String = "OK",
@@ -62,8 +62,7 @@ object AlertDialogQueue {
         val hasScrolled = remember { derivedStateOf { scrollState.value > 0 } }
 
         BasicAlertDialog(
-            onDismissRequest = { 
-                onDismiss?.invoke() 
+            onDismissRequest = {  
                 dismissDialog()
             },
             content = {
@@ -86,16 +85,18 @@ object AlertDialogQueue {
                         if (hasScrolled.value) {
                             HorizontalDivider()
                         }
-                        
-                        Text(
-                            text = dialog.message,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .heightIn(max = 200.dp)
-                                .verticalScroll(scrollState)
-                                .padding(vertical = 4.dp, horizontal = 16.dp)
-                        )
+
+                        dialog.message?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier
+                                    .heightIn(max = 200.dp)
+                                    .verticalScroll(scrollState)
+                                    .padding(vertical = 4.dp, horizontal = 16.dp)
+                            )
+                        }
 
                         if (hasScrolled.value) {
                             HorizontalDivider()
@@ -118,7 +119,6 @@ object AlertDialogQueue {
                             TextButton(
                                 onClick = {
                                     dialog.onConfirm()
-                                    onDismiss?.invoke()
                                     dismissDialog()
                                 }, 
                                 modifier = Modifier.padding(end = 16.dp)
@@ -135,7 +135,7 @@ object AlertDialogQueue {
 
 data class DialogData(
     val title: String,
-    val message: String,
+    val message: String?,
     val onConfirm: () -> Unit,
     val onDismiss: (() -> Unit)?,
     val confirmText: String,
