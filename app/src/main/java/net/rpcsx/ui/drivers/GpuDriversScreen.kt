@@ -205,6 +205,7 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .animateItem()
                                 .padding(vertical = 4.dp)
                                 .clickable {
                                     val path = if (metadata.name == "Default") "" else file.path

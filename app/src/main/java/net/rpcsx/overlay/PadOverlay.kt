@@ -29,6 +29,7 @@ import net.rpcsx.Digital2Flags
 import net.rpcsx.RPCSX
 import net.rpcsx.utils.GeneralSettings
 import net.rpcsx.utils.GeneralSettings.int
+import net.rpcsx.utils.GeneralSettings.boolean
 import kotlin.math.min
 
 
@@ -301,7 +302,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
         setOnTouchListener { _, motionEvent ->
             var hit = false
 
-            if (!isEditing) {
+            if (!isEditing && GeneralSettings["auto_hide_overlay"].boolean(true)) {
                 lastTouchTime = System.currentTimeMillis()
                 resetFadeTimer()
                 if (!isOverlayVisible) {

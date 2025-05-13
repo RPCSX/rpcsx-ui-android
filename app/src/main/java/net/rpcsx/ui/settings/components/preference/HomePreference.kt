@@ -14,13 +14,14 @@ import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun HomePreference(
+    modifier: Modifier = Modifier,
     icon: @Composable (() -> Unit) = {},
     title: String,
     description: String,
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
             .padding(bottom = 24.dp)
