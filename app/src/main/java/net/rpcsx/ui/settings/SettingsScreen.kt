@@ -458,6 +458,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
     navigateTo: (path: String) -> Unit,
+    onRefresh: () -> Unit
 ) {
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val activeUser by remember { UserRepository.activeUser }
@@ -482,7 +483,10 @@ fun SettingsScreen(
         val configPicker = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.OpenDocument(),
             onResult = { uri: Uri? ->
-                uri?.let { FileUtil.importConfig(context, it) }
+                uri?.let { 
+                    if (FileUtil.importConfig(context, it))
+                        onRefresh()
+                }
             }
         )
 
