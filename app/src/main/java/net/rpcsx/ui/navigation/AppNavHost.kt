@@ -7,14 +7,23 @@ import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,12 +32,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -39,14 +53,20 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,7 +74,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -62,10 +84,15 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.zIndex
 import androidx.core.content.edit
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import net.rpcsx.BuildConfig
 import net.rpcsx.EmulatorState
@@ -75,9 +102,9 @@ import net.rpcsx.PrecompilerServiceAction
 import net.rpcsx.ProgressRepository
 import net.rpcsx.R
 import net.rpcsx.RPCSX
+import net.rpcsx.viewmodel.MainViewModel
 import net.rpcsx.UserRepository
 import net.rpcsx.dialogs.AlertDialogQueue
-import net.rpcsx.overlay.OverlayEditActivity
 import net.rpcsx.ui.channels.DefaultGpuDriverChannel
 import net.rpcsx.ui.channels.DevRpcsxChannel
 import net.rpcsx.ui.channels.DevUiChannel
@@ -102,13 +129,27 @@ import org.json.JSONObject
 
 @Preview
 @Composable
-fun AppNavHost() {
+fun AppNavHost(viewModel: MainViewModel = viewModel(LocalContext.current as ComponentActivity)) {
     val context = LocalContext.current
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val prefs = remember { context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
     val rpcsxLibrary by remember { RPCSX.activeLibrary }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val isBottomNavigationVisible by viewModel.isBottomNavigationVisible.collectAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val visibleState = remember {
+        MutableTransitionState(false).apply {
+            targetState = currentRoute in listOf("games", "settings") && isBottomNavigationVisible
+        }
+    }
+    
+    LaunchedEffect(currentRoute, isBottomNavigationVisible) {
+        visibleState.targetState = currentRoute in listOf("games", "settings") && isBottomNavigationVisible
+    }
+
+    var fabExpanded by remember { mutableStateOf(false) }
 
     var gpuDriverChannelList =
         prefs.getStringSet("gpu_driver_channel_list", setOf(DefaultGpuDriverChannel))?.toList()
@@ -173,268 +214,421 @@ fun AppNavHost() {
 
     val settings = remember { mutableStateOf(JSONObject(RPCSX.instance.settingsGet(""))) }
 
-    NavHost(
-        navController = navController,
-        startDestination = "games"
-    ) {
-        composable(
-            route = "games"
-        ) {
-            GamesDestination(
-                navigateToSettings = { navController.navigate("settings") },
-                drawerState
+    val installPkgLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            if (uri != null) PrecompilerService.start(
+                context,
+                PrecompilerServiceAction.Install,
+                uri
             )
         }
+    )
 
-        composable(
-            route = "users"
-        ) {
-            UsersScreen(navigateBack = navController::navigateUp)
-        }
-
-        fun unwrapSetting(obj: JSONObject, path: String = "") {
-            obj.keys().forEach self@{ key ->
-                val item = obj[key]
-                val elemPath = "$path@@$key"
-                val elemObject = item as? JSONObject
-                if (elemObject == null) {
-                    Log.e("Main", "element is not object: settings$elemPath, $item")
-                    return@self
-                }
-
-                if (elemObject.has("type")) {
-                    return@self
-                }
-
-                Log.e("Main", "registration settings$elemPath")
-
-                composable(
-                    route = "settings$elemPath"
-                ) {
-                    AdvancedSettingsScreen(
-                        navigateBack = navController::navigateUp,
-                        navigateTo = navController::navigate,
-                        settings = elemObject,
-                        path = elemPath
-                    )
-                }
-
-                unwrapSetting(elemObject, elemPath)
+    val gameFolderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree(),
+        onResult = { uri: Uri? ->
+            uri?.let {
+                // TODO: FileUtil.saveGameFolderUri(prefs, it)
+                val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                context.contentResolver.takePersistableUriPermission(it, takeFlags)
+                FileUtil.installPackages(context, it)
             }
         }
+    )
 
-        composable(
-            route = "settings@@$"
-        ) {
-            AdvancedSettingsScreen(
-                navigateBack = navController::navigateUp,
-                navigateTo = navController::navigate,
-                settings = settings.value,
-            )
-        }
-
-        composable(
-            route = "settings"
-        ) {
-            SettingsScreen(
-                navigateBack = navController::navigateUp,
-                navigateTo = navController::navigate,
-            )
-        }
-
-        composable(
-            route = "controls"
-        ) {
-            ControllerSettings(
-                navigateBack = navController::navigateUp
-            )
-        }
-
-        composable(
-            route = "drivers"
-        ) {
-            GpuDriversScreen(
-                navigateBack = navController::navigateUp
-            )
-        }
-
-        composable(
-            route = "update_channels"
-        ) {
-            UpdateChannelsScreen(
-                navigateBack = navController::navigateUp,
-                navigateTo = navController::navigate,
-            )
-        }
-
-        composable(
-            route = "gpu_driver_channels"
-        ) {
-            UpdateChannelListScreen(
-                navigateBack = navController::navigateUp,
-                title = "GPU Driver Download Channel",
-                items = gpuDriverChannels.toList(),
-                selected = prefs.getString("gpu_driver_channel", null),
-                onSelect = { channel ->
-                    prefs.edit {
-                        putString("gpu_driver_channel", channel)
-                    }
-
-                    navController.navigateUp()
-                },
-                onDelete = { channel ->
-                    gpuDriverChannels = gpuDriverChannels.filter { it != channel }
-
-                    prefs.edit {
-                        putStringSet("gpu_driver_channel_list", gpuDriverChannels.toSet())
-                    }
-                },
-                onAdd = { channel ->
-                    if (gpuDriverChannels.find { it == channel } != null) {
-                        return@UpdateChannelListScreen
-                    }
-
-                    gpuDriverChannels = gpuDriverChannels + channel
-
-                    prefs.edit {
-                        putStringSet("gpu_driver_channel_list", gpuDriverChannels.toSet())
-                    }
-                },
-                isDeletable = { gpuDriverChannels.size > 1 })
-        }
-
-        composable(
-            route = "ui_channels"
-        ) {
-            UpdateChannelListScreen(
-                navigateBack = navController::navigateUp,
-                title = "RPCSX UI Android Update Channel",
-                items = channelsToUiText(uiChannels, ReleaseUiChannel, DevUiChannel),
-                selected = channelToUiText(
-                    prefs.getString("ui_channel", ReleaseUiChannel)!!,
-                    ReleaseUiChannel,
-                    DevUiChannel
-                ),
-                onSelect = { channel ->
-                    prefs.edit {
-                        putString(
-                            "ui_channel",
-                            uiTextToChannel(channel, ReleaseUiChannel, DevUiChannel)
-                        )
-                    }
-
-                    navController.navigateUp()
-                },
-                onDelete = { channel ->
-                    uiChannels = uiChannels.filter { it != channel }
-
-                    prefs.edit {
-                        putStringSet(
-                            "ui_channel_list",
-                            uiTextToChannels(uiChannels, ReleaseUiChannel, DevUiChannel).toSet()
-                        )
-                    }
-                },
-                onAdd = { channel ->
-                    if (!isValidChannel(
-                            channel,
-                            ReleaseUiChannel,
-                            DevUiChannel
-                        ) || uiChannels.find { it == channel } != null
+    Scaffold(
+        bottomBar = {
+            AnimatedVisibility(
+                visibleState = visibleState,
+                enter = slideInVertically(
+                    initialOffsetY = { it }, // Slide in from bottom
+                    animationSpec = tween(durationMillis = 300)
+                 ),
+                 exit = slideOutVertically(
+                    targetOffsetY = { it }, // Slide out to bottom
+                    animationSpec = tween(durationMillis = 200)
+                )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .windowInsetsPadding(NavigationBarDefaults.windowInsets)
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    Surface(
+                        color = NavigationBarDefaults.containerColor,
+                        contentColor = MaterialTheme.colorScheme.contentColorFor(NavigationBarDefaults.containerColor),
+                        tonalElevation = 0.dp,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .clip(CircleShape)
+                            .shadow(8.dp, CircleShape)
+                            .background(MaterialTheme.colorScheme.surface)
                     ) {
-                        return@UpdateChannelListScreen
-                    }
-
-                    uiChannels += channel
-
-                    prefs.edit {
-                        putStringSet(
-                            "ui_channel_list",
-                            uiTextToChannels(uiChannels, ReleaseUiChannel, DevUiChannel).toSet()
-                        )
-                    }
-                },
-                isDeletable = { isValidChannel(it, ReleaseUiChannel, DevUiChannel) }
-            )
-        }
-
-        composable(
-            route = "rpcsx_channels"
-        ) {
-            var downloadArch by remember { mutableStateOf(RpcsxUpdater.getArch()) }
-            UpdateChannelListScreen(
-                navigateBack = navController::navigateUp,
-                title = "RPCSX Download Channel",
-                items = channelsToUiText(rpcsxChannels, ReleaseRpcsxChannel, DevRpcsxChannel),
-                selected = channelToUiText(
-                    prefs.getString("rpcsx_channel", ReleaseRpcsxChannel)!!,
-                    ReleaseRpcsxChannel,
-                    DevRpcsxChannel
-                ),
-                onSelect = { channel ->
-                    prefs.edit {
-                        putString(
-                            "rpcsx_channel",
-                            uiTextToChannel(channel, ReleaseRpcsxChannel, DevRpcsxChannel)
-                        )
-                    }
-
-                    navController.navigateUp()
-                },
-                onDelete = { channel ->
-                    rpcsxChannels = rpcsxChannels.filter { it != channel }
-
-                    prefs.edit {
-                        putStringSet(
-                            "rpcsx_channel_list",
-                            uiTextToChannels(
-                                rpcsxChannels,
-                                ReleaseRpcsxChannel,
-                                DevRpcsxChannel
-                            ).toSet()
-                        )
-                    }
-                },
-                onAdd = { channel ->
-                    if (!isValidChannel(
-                            channel,
-                            ReleaseRpcsxChannel,
-                            DevRpcsxChannel
-                        ) || rpcsxChannels.find { it == channel } != null
-                    ) {
-                        return@UpdateChannelListScreen
-                    }
-
-                    rpcsxChannels += channel
-
-                    prefs.edit {
-                        putStringSet(
-                            "rpcsx_channel_list",
-                            uiTextToChannels(
-                                rpcsxChannels,
-                                ReleaseRpcsxChannel,
-                                DevRpcsxChannel
-                            ).toSet()
-                        )
-                    }
-                },
-                isDeletable = { isValidChannel(it, ReleaseRpcsxChannel, DevRpcsxChannel) },
-                actions = {
-                    SingleSelectionDialog(
-                        currentValue = downloadArch,
-                        values = listOf("armv8-a", "armv8.1-a", "armv8.2-a", "armv8.4-a", "armv8.5-a", "armv9-a", "armv9.1-a"),
-                        title = "",
-                        icon = null,
-                        onValueChange = { value ->
-                            RpcsxUpdater.setArch(value)
-                            downloadArch = value
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .selectableGroup(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            NavigationBarItem(
+                                selected = currentRoute == "games",
+                                onClick = { 
+                                    navController.navigate("games") {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    } 
+                                },
+                                icon = { Icon(Icons.Default.Home, contentDescription = "Games") },
+                                label = { Text("Home") }
+                            )
+                            
+                            Button(
+                                onClick = {
+                                    if (currentRoute == "settings") {
+                                        AlertDialogQueue.showDialog(
+                                            "RPCSX UI Android",
+                                            "UI ${BuildConfig.Version}\nRPCSX ${RpcsxUpdater.getCurrentVersion()}",
+                                            confirmText = "Copy",
+                                        )
+                                    } else { fabExpanded = !fabExpanded }
+                                }
+                            ) {
+                                if (currentRoute == "settings") Icon(Icons.Outlined.Info, contentDescription = null) else Icon(Icons.Filled.Add, contentDescription = "Add")
+                            }
+                            
+                            NavigationBarItem(
+                                selected = currentRoute == "settings",
+                                onClick = {  
+                                    navController.navigate("settings") {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
+                                label = { Text("Settings") }
+                            )
                         }
-                    )
+                    }
                 }
-            )
+            }
         }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .zIndex(2f),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            AnimatedVisibility(
+                visible = fabExpanded && currentRoute != "settings",
+                enter = androidx.compose.animation.expandVertically(animationSpec = tween(300, easing = FastOutSlowInEasing)),
+                exit = androidx.compose.animation.shrinkVertically(animationSpec = tween(200, easing = FastOutSlowInEasing))
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FloatingActionButton(
+                        onClick = {
+                            installPkgLauncher.launch("*/*")
+                            fabExpanded = false
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(45.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_description),
+                            contentDescription = "Select Game"
+                        )
+                    }
+                    FloatingActionButton(
+                        onClick = {
+                            gameFolderPickerLauncher.launch(null)
+                            fabExpanded = false
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(45.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_folder),
+                            contentDescription = "Select Folder"
+                        )
+                    }
+                }
+            }
+        }
+        
+        NavHost(
+            navController = navController,
+            startDestination = "games"
+        ) {
+            composable(
+                route = "games"
+            ) {
+                GamesDestination(
+                    navigateToSettings = { navController.navigate("settings") },
+                    drawerState
+                )
+            }
 
-        unwrapSetting(settings.value)
+            composable(
+                route = "users"
+            ) {
+                UsersScreen(navigateBack = navController::navigateUp)
+            }
+
+            fun unwrapSetting(obj: JSONObject, path: String = "") {
+                obj.keys().forEach self@{ key ->
+                    val item = obj[key]
+                    val elemPath = "$path@@$key"
+                    val elemObject = item as? JSONObject
+                    if (elemObject == null) {
+                        Log.e("Main", "element is not object: settings$elemPath, $item")
+                        return@self
+                    }
+
+                    if (elemObject.has("type")) {
+                        return@self
+                    }
+
+                    Log.e("Main", "registration settings$elemPath")
+
+                    composable(
+                        route = "settings$elemPath"
+                    ) {
+                        AdvancedSettingsScreen(
+                            navigateBack = navController::navigateUp,
+                            navigateTo = navController::navigate,
+                            settings = elemObject,
+                            path = elemPath
+                        )
+                    }
+
+                    unwrapSetting(elemObject, elemPath)
+                }
+            }
+
+            composable(
+                route = "settings@@$"
+            ) {
+                AdvancedSettingsScreen(
+                    navigateBack = navController::navigateUp,
+                    navigateTo = navController::navigate,
+                    settings = settings.value,
+                )
+            }
+
+            composable(
+                route = "settings"
+            ) {
+                SettingsScreen(
+                    navigateBack = navController::navigateUp,
+                    navigateTo = navController::navigate,
+                )
+            }
+
+            composable(
+                route = "controls"
+            ) {
+                ControllerSettings(
+                    navigateBack = navController::navigateUp
+                )
+            }
+
+            composable(
+                route = "drivers"
+            ) {
+                GpuDriversScreen(
+                    navigateBack = navController::navigateUp
+                )
+            }
+
+            composable(
+                route = "update_channels"
+            ) {
+                UpdateChannelsScreen(
+                    navigateBack = navController::navigateUp,
+                    navigateTo = navController::navigate,
+                )
+            }
+
+            composable(
+                route = "gpu_driver_channels"
+            ) {
+                UpdateChannelListScreen(
+                    navigateBack = navController::navigateUp,
+                    title = "GPU Driver Download Channel",
+                    items = gpuDriverChannels.toList(),
+                    selected = prefs.getString("gpu_driver_channel", null),
+                    onSelect = { channel ->
+                        prefs.edit {
+                            putString("gpu_driver_channel", channel)
+                        }
+
+                        navController.navigateUp()
+                    },
+                    onDelete = { channel ->
+                        gpuDriverChannels = gpuDriverChannels.filter { it != channel }
+
+                        prefs.edit {
+                            putStringSet("gpu_driver_channel_list", gpuDriverChannels.toSet())
+                        }
+                    },
+                    onAdd = { channel ->
+                        if (gpuDriverChannels.find { it == channel } != null) {
+                            return@UpdateChannelListScreen
+                        }
+
+                        gpuDriverChannels = gpuDriverChannels + channel
+
+                        prefs.edit {
+                            putStringSet("gpu_driver_channel_list", gpuDriverChannels.toSet())
+                        }
+                    },
+                    isDeletable = { gpuDriverChannels.size > 1 })
+            }
+
+            composable(
+                route = "ui_channels"
+            ) {
+                UpdateChannelListScreen(
+                    navigateBack = navController::navigateUp,
+                    title = "RPCSX UI Android Update Channel",
+                    items = channelsToUiText(uiChannels, ReleaseUiChannel, DevUiChannel),
+                    selected = channelToUiText(
+                        prefs.getString("ui_channel", ReleaseUiChannel)!!,
+                        ReleaseUiChannel,
+                        DevUiChannel
+                    ),
+                    onSelect = { channel ->
+                        prefs.edit {
+                            putString(
+                                "ui_channel",
+                                uiTextToChannel(channel, ReleaseUiChannel, DevUiChannel)
+                            )
+                        }
+
+                        navController.navigateUp()
+                    },
+                    onDelete = { channel ->
+                        uiChannels = uiChannels.filter { it != channel }
+
+                        prefs.edit {
+                            putStringSet(
+                                "ui_channel_list",
+                                uiTextToChannels(uiChannels, ReleaseUiChannel, DevUiChannel).toSet()
+                            )
+                        }
+                    },
+                    onAdd = { channel ->
+                        if (!isValidChannel(
+                                channel,
+                                ReleaseUiChannel,
+                                DevUiChannel
+                            ) || uiChannels.find { it == channel } != null
+                        ) {
+                            return@UpdateChannelListScreen
+                        }
+
+                        uiChannels += channel
+
+                        prefs.edit {
+                            putStringSet(
+                                "ui_channel_list",
+                                uiTextToChannels(uiChannels, ReleaseUiChannel, DevUiChannel).toSet()
+                            )
+                        }
+                    },
+                    isDeletable = { isValidChannel(it, ReleaseUiChannel, DevUiChannel) }
+                )
+            }
+
+            composable(
+                route = "rpcsx_channels"
+            ) {
+                var downloadArch by remember { mutableStateOf(RpcsxUpdater.getArch()) }
+                UpdateChannelListScreen(
+                    navigateBack = navController::navigateUp,
+                    title = "RPCSX Download Channel",
+                    items = channelsToUiText(rpcsxChannels, ReleaseRpcsxChannel, DevRpcsxChannel),
+                    selected = channelToUiText(
+                        prefs.getString("rpcsx_channel", ReleaseRpcsxChannel)!!,
+                        ReleaseRpcsxChannel,
+                        DevRpcsxChannel
+                    ),
+                    onSelect = { channel ->
+                        prefs.edit {
+                            putString(
+                                "rpcsx_channel",
+                                uiTextToChannel(channel, ReleaseRpcsxChannel, DevRpcsxChannel)
+                            )
+                        }
+
+                        navController.navigateUp()
+                    },
+                    onDelete = { channel ->
+                        rpcsxChannels = rpcsxChannels.filter { it != channel }
+
+                        prefs.edit {
+                            putStringSet(
+                                "rpcsx_channel_list",
+                                uiTextToChannels(
+                                    rpcsxChannels,
+                                    ReleaseRpcsxChannel,
+                                    DevRpcsxChannel
+                                ).toSet()
+                            )
+                        }
+                    },
+                    onAdd = { channel ->
+                        if (!isValidChannel(
+                                channel,
+                                ReleaseRpcsxChannel,
+                                DevRpcsxChannel
+                            ) || rpcsxChannels.find { it == channel } != null
+                        ) {
+                            return@UpdateChannelListScreen
+                        }
+
+                        rpcsxChannels += channel
+
+                        prefs.edit {
+                            putStringSet(
+                                "rpcsx_channel_list",
+                                uiTextToChannels(
+                                    rpcsxChannels,
+                                    ReleaseRpcsxChannel,
+                                    DevRpcsxChannel
+                                ).toSet()
+                            )
+                        }
+                    },
+                    isDeletable = { isValidChannel(it, ReleaseRpcsxChannel, DevRpcsxChannel) },
+                    actions = {
+                        SingleSelectionDialog(
+                            currentValue = downloadArch,
+                            values = listOf("armv8-a", "armv8.1-a", "armv8.2-a", "armv8.4-a", "armv8.5-a", "armv9-a", "armv9.1-a"),
+                            title = "",
+                            icon = null,
+                            onValueChange = { value ->
+                                RpcsxUpdater.setArch(value)
+                                downloadArch = value
+                            }
+                        )
+                    }
+                )
+            }
+
+            unwrapSetting(settings.value)
+        }
     }
 }
 
@@ -460,17 +654,6 @@ fun GamesDestination(
         UserRepository.load()
     }
 
-    val installPkgLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri: Uri? ->
-            if (uri != null) PrecompilerService.start(
-                context,
-                PrecompilerServiceAction.Install,
-                uri
-            )
-        }
-    )
-
     val installFwLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
@@ -479,18 +662,6 @@ fun GamesDestination(
                 PrecompilerServiceAction.InstallFirmware,
                 uri
             )
-        }
-    )
-
-    val gameFolderPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocumentTree(),
-        onResult = { uri: Uri? ->
-            uri?.let {
-                // TODO: FileUtil.saveGameFolderUri(prefs, it)
-                val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-                context.contentResolver.takePersistableUriPermission(it, takeFlags)
-                FileUtil.installPackages(context, it)
-            }
         }
     )
 
@@ -551,31 +722,6 @@ fun GamesDestination(
                         }
                     )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                    NavigationDrawerItem(
-                        label = { Text("Settings") },
-                        selected = false,
-                        icon = { Icon(Icons.Default.Settings, null) },
-                        onClick = navigateToSettings
-                    )
-
-                    NavigationDrawerItem(
-                        label = { Text("Edit Overlay") },
-                        selected = false,
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_show_osc),
-                                null
-                            )
-                        },
-                        onClick = {
-                            context.startActivity(
-                                Intent(
-                                    context,
-                                    OverlayEditActivity::class.java
-                                )
-                            )
-                        }
-                    )
 
                     NavigationDrawerItem(
                         label = { Text("System Info") },
@@ -604,22 +750,6 @@ fun GamesDestination(
                             )
                         }
                     )
-
-                    HorizontalDivider()
-
-                    NavigationDrawerItem(
-                        label = { Text("About") },
-                        selected = false,
-                        icon = { Icon(Icons.Outlined.Info, contentDescription = null) },
-                        onClick = {
-                            AlertDialogQueue.showDialog(
-                                "RPCSX UI Android",
-                                "UI ${BuildConfig.Version}\nRPCSX ${RpcsxUpdater.getCurrentVersion()}",
-                                confirmText = "Copy",
-                            )
-                        }
-                    )
-
                 }
             }
         }
@@ -670,64 +800,6 @@ fun GamesDestination(
                     }
                 )
             },
-            floatingActionButton = {
-                DropUpFloatingActionButton(installPkgLauncher, gameFolderPickerLauncher)
-            },
         ) { innerPadding -> Column(modifier = Modifier.padding(innerPadding)) { GamesScreen() } }
-    }
-}
-
-@Composable
-fun DropUpFloatingActionButton(
-    installPkgLauncher: ActivityResultLauncher<String>,
-    gameFolderPickerLauncher: ActivityResultLauncher<Uri?>
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier.padding(16.dp),
-        contentAlignment = androidx.compose.ui.Alignment.BottomEnd
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = androidx.compose.ui.Alignment.End
-        ) {
-            AnimatedVisibility(
-                visible = expanded,
-                enter = androidx.compose.animation.expandVertically(
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
-                ),
-                exit = androidx.compose.animation.shrinkVertically(
-                    animationSpec = tween(200, easing = FastOutSlowInEasing)
-                )
-            ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FloatingActionButton(
-                        onClick = { installPkgLauncher.launch("*/*"); expanded = false },
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_description),
-                            contentDescription = "Select Game"
-                        )
-                    }
-                    FloatingActionButton(
-                        onClick = { gameFolderPickerLauncher.launch(null); expanded = false },
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_folder),
-                            contentDescription = "Select Folder"
-                        )
-                    }
-                }
-            }
-
-            FloatingActionButton(
-                onClick = { expanded = !expanded }
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add")
-            }
-        }
     }
 }

@@ -6,6 +6,7 @@ import android.provider.DocumentsContract
 import android.util.Log
 import android.view.KeyEvent
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.RepeatMode
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -53,6 +55,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,11 +74,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.rpcsx.R
 import net.rpcsx.RPCSX
+import net.rpcsx.overlay.OverlayEditActivity
+import net.rpcsx.viewmodel.MainViewModel
 import net.rpcsx.UserRepository
 import net.rpcsx.dialogs.AlertDialogQueue
 import net.rpcsx.provider.AppDataDocumentProvider
@@ -109,7 +115,7 @@ fun AdvancedSettingsScreen(
     var searchQuery by remember { mutableStateOf("") }
     var isSearching by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-
+    
 
     val installRpcsxLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -458,6 +464,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
     navigateTo: (path: String) -> Unit,
+    viewModel: MainViewModel = viewModel(LocalContext.current as ComponentActivity)
 ) {
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val activeUser by remember { UserRepository.activeUser }
@@ -479,23 +486,18 @@ fun SettingsScreen(
         }) { contentPadding ->
         val context = LocalContext.current
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding),
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+        LaunchedEffect(topBarScrollBehavior.state.collapsedFraction) {
+            val isCollapsed = topBarScrollBehavior.state.collapsedFraction > 0.8f
+            viewModel.setBottomNavigationVisibility(!isCollapsed)
+        }
 
-            item(
-                key = "internal_directory"
-            ) {
-                HomePreference(
-                    title = "View Internal Directory",
-                    icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_folder)) },
-                    description = "Open internal directory of RPCSX in file manager"
-                ) {
+        val settings = listOf(
+            HomeSettingItem(
+                key = "internal_directory",
+                title = "View Internal Directory",
+                description = "Open internal directory of RPCSX in file manager",
+                icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_folder)) },
+                onClick = {
                     if (!FileUtil.launchInternalDir(context)) {
                         AlertDialogQueue.showDialog(
                             "View Internal Directory Error",
@@ -503,50 +505,42 @@ fun SettingsScreen(
                         )
                     }
                 }
-            }
-
-            item(
-                key = "users"
-            ) {
-                HomePreference(
-                    title = "Users",
-                    description = "Active User: ${UserRepository.getUsername(activeUser)}",
-                    icon = {
-                        PreferenceIcon(icon = Icons.Default.Person)
-                    }
-                ) {
+            ),
+            HomeSettingItem(
+                key = "users",
+                title = "Users",
+                description = "Active User: ${UserRepository.getUsername(activeUser)}",
+                icon = {
+                    PreferenceIcon(icon = Icons.Default.Person)
+                },
+                onClick = { 
                     navigateTo("users")
                 }
-            }
-
-            item(key = "update_channels") {
-                HomePreference(
-                    title = "Download Channels",
-                    icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_cloud_download)) },
-                    description = "",
-                ) {
+            ),
+            HomeSettingItem(
+                key = "update_channels",
+                title = "Download Channels",
+                icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_cloud_download)) },
+                description = "",
+                onClick = {
                     navigateTo("update_channels")
                 }
-            }
-
-            item(key = "advanced_settings") {
-                HomePreference(
-                    title = "Advanced Settings",
-                    icon = { Icon(painterResource(R.drawable.tune), null) },
-                    description = "Configure emulator advanced settings"
-                ) {
-                    navigateTo("settings@@$")
+            ),
+            HomeSettingItem(
+                key = "advanced_settings",
+                title = "Advanced Settings",
+                icon = { Icon(painterResource(R.drawable.tune), null) },
+                description = "Configure emulator advanced settings",
+                onClick = { 
+                    navigateTo("settings@@$") 
                 }
-            }
-
-            item(
-                key = "custom_gpu_driver"
-            ) {
-                HomePreference(
-                    title = "Custom GPU Driver",
-                    icon = { Icon(painterResource(R.drawable.add_diamond), contentDescription = null) },
-                    description = "Install alternative drivers for potentially better performance or accuracy"
-                ) {
+            ),
+            HomeSettingItem(
+                key = "custom_gpu_driver",
+                title = "Custom GPU Driver",
+                icon = { Icon(painterResource(R.drawable.add_diamond), contentDescription = null) },
+                description = "Install alternative drivers for potentially better performance or accuracy",
+                onClick = { 
                     if (RPCSX.instance.supportsCustomDriverLoading()) {
                         navigateTo("drivers")
                     } else {
@@ -558,24 +552,22 @@ fun SettingsScreen(
                         )
                     }
                 }
-            }
-
-            item(key = "controls") {
-                HomePreference(
-                    title = "Controls",
-                    icon = { Icon(painterResource(R.drawable.gamepad), null) },
-                    description = "Configure controller"
-                ) {
-                    navigateTo("controls")
+            ),
+            HomeSettingItem(
+                key = "controls",
+                title = "Controls",
+                icon = { Icon(painterResource(R.drawable.gamepad), null) },
+                description = "Configure controller",
+                onClick = { 
+                    navigateTo("controls") 
                 }
-            }
-
-            item(key = "share_logs") {
-                HomePreference(
-                    title = "Share Log",
-                    icon = { Icon(imageVector = Icons.Default.Share, contentDescription = null) },
-                    description = "Share RPCSX's log file to debug issues"
-                ) {
+            ),
+            HomeSettingItem(
+                key = "share_logs",
+                title = "Share Log",
+                icon = { Icon(imageVector = Icons.Default.Share, contentDescription = null) },
+                description = "Share RPCSX's log file to debug issues",
+                onClick = {
                     val file = DocumentFile.fromSingleUri(
                         context, DocumentsContract.buildDocumentUri(
                             AppDataDocumentProvider.AUTHORITY,
@@ -594,6 +586,26 @@ fun SettingsScreen(
                         Toast.makeText(context, "Log file not found!", Toast.LENGTH_SHORT).show()
                     }
                 }
+            )
+        )
+
+        val sortedSettings = settings.sortedBy { it.title }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(contentPadding),
+        ) {
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            items(sortedSettings, key = { it.key }) { item ->
+                HomePreference(
+                    title = item.title,
+                    description = item.description,
+                    icon = item.icon,
+                    onClick = item.onClick,
+                    modifier = Modifier.animateItem()
+                )
             }
         }
     }
@@ -662,6 +674,39 @@ fun ControllerSettings(
                     leadingIcon = null,
                     onClick = { value ->
                         GeneralSettings.setValue("haptic_feedback", value)
+                        itemValue = value
+                    }
+                )
+            }
+
+            item {
+                RegularPreference(
+                    title = "Edit Overlay",
+                    leadingIcon = null,
+                    onClick = {
+                        context.startActivity(
+                            Intent(
+                                context,
+                                OverlayEditActivity::class.java
+                            )
+                        )
+                    }
+                )
+            }
+
+            item {
+                var itemValue by remember {
+                    mutableStateOf(
+                        GeneralSettings["auto_hide_overlay"] as Boolean? ?: true
+                    )
+                }
+                val def = true
+                SwitchPreference(
+                    checked = itemValue,
+                    title = "Enable Auto Hide Overlay" + if (itemValue == def) "" else " *",
+                    leadingIcon = null,
+                    onClick = { value ->
+                        GeneralSettings.setValue("auto_hide_overlay", value)
                         itemValue = value
                     }
                 )
@@ -838,6 +883,14 @@ fun ButtonMappingAnim() {
             .fillMaxSize()
     )
 }
+
+data class HomeSettingItem(
+    val key: String,
+    val title: String,
+    val description: String = "",
+    val icon: @Composable () -> Unit,
+    val onClick: () -> Unit
+)
 
 @Preview
 @Composable
