@@ -580,7 +580,7 @@ fun GamesDestination(
                     NavigationDrawerItem(
                         label = { Text("System Info") },
                         selected = false,
-                        icon = { Icon(painterResource(R.drawable.memory), contentDescription = null) },
+                        icon = { Icon(painterResource(R.drawable.perm_device_information), contentDescription = null) },
                         onClick = {
                             AlertDialogQueue.showDialog(
                                 "System Info",

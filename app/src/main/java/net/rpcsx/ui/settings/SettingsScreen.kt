@@ -544,7 +544,7 @@ fun SettingsScreen(
             ) {
                 HomePreference(
                     title = "Custom GPU Driver",
-                    icon = { Icon(painterResource(R.drawable.add_diamond), contentDescription = null) },
+                    icon = { Icon(painterResource(R.drawable.memory), contentDescription = null) },
                     description = "Install alternative drivers for potentially better performance or accuracy"
                 ) {
                     if (RPCSX.instance.supportsCustomDriverLoading()) {
