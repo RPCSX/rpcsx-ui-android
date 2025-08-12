@@ -1,15 +1,16 @@
 package net.rpcsx.utils
 
-import android.content.ActivityNotFoundException
+import android.net.Uri
+import android.util.Log
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.AssetFileDescriptor
+import android.content.ActivityNotFoundException
 import android.database.Cursor
-import android.net.Uri
 import android.provider.DocumentsContract
-import android.util.Log
 import androidx.core.content.edit
+import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,6 +27,8 @@ import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 import java.io.IOException
 import kotlin.concurrent.thread
 
@@ -228,6 +231,38 @@ object FileUtil {
             withContext(Dispatchers.Main) {
                 onComplete(result)
             }
+        }
+    }
+
+    fun importConfig(ctx: Context, uri: Uri): Boolean {
+        return try {
+            val docFile = DocumentFile.fromSingleUri(ctx, uri)
+            if (docFile == null || (docFile.name?.endsWith(".yml", true) != true)) return false
+            val inputStream: InputStream = ctx.contentResolver.openInputStream(uri) ?: return false
+            val outputFile: File = ctx.getExternalFilesDir(null)?.resolve("config")?.resolve("config.yml") ?: return false
+            val outputStream: OutputStream = outputFile.outputStream()
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.close()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    fun exportConfig(ctx: Context, uri: Uri): Boolean {
+        return try {
+            val inputFile = ctx.getExternalFilesDir(null)?.resolve("config")?.resolve("config.yml") ?: return false
+            val inputStream: InputStream = inputFile.inputStream()
+            val outputStream: OutputStream = ctx.contentResolver.openOutputStream(uri) ?: return false
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.close()
+           true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 

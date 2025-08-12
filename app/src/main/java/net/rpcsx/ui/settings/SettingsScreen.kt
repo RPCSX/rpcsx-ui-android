@@ -458,6 +458,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     navigateBack: () -> Unit,
     navigateTo: (path: String) -> Unit,
+    onRefresh: () -> Unit
 ) {
     val topBarScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val activeUser by remember { UserRepository.activeUser }
@@ -476,9 +477,26 @@ fun SettingsScreen(
                         Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft, null)
                     }
                 })
-        }) { contentPadding ->
+        }
+    ) { contentPadding ->
         val context = LocalContext.current
+        val configPicker = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+            onResult = { uri: Uri? ->
+                uri?.let { 
+                    if (FileUtil.importConfig(context, it))
+                        onRefresh()
+                }
+            }
+        )
 
+        val configExporter = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.CreateDocument("application/x-yaml"),
+            onResult = { uri: Uri? ->
+                uri?.let { FileUtil.exportConfig(context, it) }
+            }
+        )
+        
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -494,15 +512,16 @@ fun SettingsScreen(
                 HomePreference(
                     title = "View Internal Directory",
                     icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_folder)) },
-                    description = "Open internal directory of RPCSX in file manager"
-                ) {
-                    if (!FileUtil.launchInternalDir(context)) {
-                        AlertDialogQueue.showDialog(
-                            "View Internal Directory Error",
-                            "No Activity found to handle this action"
-                        )
+                    description = "Open internal directory of RPCSX in file manager",
+                    onClick = {
+                        if (!FileUtil.launchInternalDir(context)) {
+                            AlertDialogQueue.showDialog(
+                                "View Internal Directory Error",
+                                "No Activity found to handle this action"
+                            )
+                        }
                     }
-                }
+                )
             }
 
             item(
@@ -513,10 +532,11 @@ fun SettingsScreen(
                     description = "Active User: ${UserRepository.getUsername(activeUser)}",
                     icon = {
                         PreferenceIcon(icon = Icons.Default.Person)
+                    },
+                    onClick = {
+                        navigateTo("users")
                     }
-                ) {
-                    navigateTo("users")
-                }
+                )
             }
 
             item(key = "update_channels") {
@@ -524,19 +544,34 @@ fun SettingsScreen(
                     title = "Download Channels",
                     icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_cloud_download)) },
                     description = "",
-                ) {
-                    navigateTo("update_channels")
-                }
+                    onClick = {
+                        navigateTo("update_channels")
+                    }
+                )
             }
 
             item(key = "advanced_settings") {
                 HomePreference(
                     title = "Advanced Settings",
                     icon = { Icon(painterResource(R.drawable.tune), null) },
-                    description = "Configure emulator advanced settings"
-                ) {
-                    navigateTo("settings@@$")
-                }
+                    description = "Configure emulator advanced settings",
+                    onClick = {
+                        navigateTo("settings@@$")
+                    },
+                    onLongClick = {
+                        AlertDialogQueue.showDialog(
+                            title = "Manage Settings",
+                            confirmText = "Export",
+                            dismissText = "Import",
+                            onDismiss = {
+                                configPicker.launch(arrayOf("*/*"))
+                            },
+                            onConfirm = {
+                                configExporter.launch("config.yml")
+                            }
+                        )
+                    }
+                )
             }
 
             item(
@@ -545,55 +580,56 @@ fun SettingsScreen(
                 HomePreference(
                     title = "Custom GPU Driver",
                     icon = { Icon(painterResource(R.drawable.memory), contentDescription = null) },
-                    description = "Install alternative drivers for potentially better performance or accuracy"
-                ) {
-                    if (RPCSX.instance.supportsCustomDriverLoading()) {
-                        navigateTo("drivers")
-                    } else {
-                        AlertDialogQueue.showDialog(
-                            title = "Custom drivers not supported",
-                            message = "Custom driver loading isn't currently supported for this device",
-                            confirmText = "Close",
-                            dismissText = ""
-                        )
-                    }
-                }
+                    description = "Install alternative drivers for potentially better performance or accuracy",
+                    onClick = {
+                        if (RPCSX.instance.supportsCustomDriverLoading()) {
+                            navigateTo("drivers")
+                        } else {
+                            AlertDialogQueue.showDialog(
+                                title = "Custom drivers not supported",
+                                message = "Custom driver loading isn't currently supported for this device",
+                                confirmText = "Close",
+                                dismissText = ""
+                            )
+                        }
+                    }  
+                )
             }
 
             item(key = "controls") {
                 HomePreference(
                     title = "Controls",
                     icon = { Icon(painterResource(R.drawable.gamepad), null) },
-                    description = "Configure controller"
-                ) {
-                    navigateTo("controls")
-                }
+                    description = "Configure controller",
+                    onClick = { navigateTo("controls") }
+                )       
             }
 
             item(key = "share_logs") {
                 HomePreference(
                     title = "Share Log",
                     icon = { Icon(imageVector = Icons.Default.Share, contentDescription = null) },
-                    description = "Share RPCSX's log file to debug issues"
-                ) {
-                    val file = DocumentFile.fromSingleUri(
-                        context, DocumentsContract.buildDocumentUri(
-                            AppDataDocumentProvider.AUTHORITY,
-                            "${AppDataDocumentProvider.ROOT_ID}/cache/RPCSX${if (RPCSX.lastPlayedGame.isNotEmpty()) "" else ".old"}.log"
+                    description = "Share RPCSX's log file to debug issues",
+                    onClick = {
+                        val file = DocumentFile.fromSingleUri(
+                            context, DocumentsContract.buildDocumentUri(
+                                AppDataDocumentProvider.AUTHORITY,
+                                "${AppDataDocumentProvider.ROOT_ID}/cache/RPCSX${if (RPCSX.lastPlayedGame.isNotEmpty()) "" else ".old"}.log"
+                            )
                         )
-                    )
 
-                    if (file != null && file.exists() && file.length() != 0L) {
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            setDataAndType(file.uri, "text/plain")
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            putExtra(Intent.EXTRA_STREAM, file.uri)
+                        if (file != null && file.exists() && file.length() != 0L) {
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                setDataAndType(file.uri, "text/plain")
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                putExtra(Intent.EXTRA_STREAM, file.uri)
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Share Log File"))
+                        } else {
+                            Toast.makeText(context, "Log file not found!", Toast.LENGTH_SHORT).show()
                         }
-                        context.startActivity(Intent.createChooser(intent, "Share Log File"))
-                    } else {
-                        Toast.makeText(context, "Log file not found!", Toast.LENGTH_SHORT).show()
                     }
-                }
+                )
             }
         }
     }

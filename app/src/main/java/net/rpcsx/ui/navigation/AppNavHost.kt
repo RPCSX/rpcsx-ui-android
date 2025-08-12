@@ -172,6 +172,9 @@ fun AppNavHost() {
     }
 
     val settings = remember { mutableStateOf(JSONObject(RPCSX.instance.settingsGet(""))) }
+    val refreshSettings: () -> Unit = {
+        settings.value = JSONObject(RPCSX.instance.settingsGet(""))
+    }
 
     NavHost(
         navController = navController,
@@ -239,6 +242,7 @@ fun AppNavHost() {
             SettingsScreen(
                 navigateBack = navController::navigateUp,
                 navigateTo = navController::navigate,
+                onRefresh = refreshSettings
             )
         }
 
