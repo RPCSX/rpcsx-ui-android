@@ -71,7 +71,10 @@ class MainActivity : ComponentActivity() {
                     File(rpcsxLibrary).delete()
                     rpcsxLibrary = rpcsxPrevLibrary
 
-                    AlertDialogQueue.showDialog("RPCSX Update Failed", "Failed to load new version, previous version was restored")
+                    AlertDialogQueue.showDialog(
+                        getString(R.string.failed_to_update_rpcsx),
+                        getString(R.string.failed_to_load_new_version)
+                    )
                 } else if (rpcsxUpdateStatus == null) {
                     GeneralSettings["rpcsx_update_status"] = false
                     GeneralSettings.sync()

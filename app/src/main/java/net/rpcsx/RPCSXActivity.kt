@@ -73,7 +73,10 @@ class RPCSXActivity : Activity() {
 
             val bootResult = RPCSX.boot(gamePath)
             if (bootResult != BootResult.NoErrors) {
-                AlertDialogQueue.showDialog("Boot Failed", "Error: ${bootResult.name}")
+                AlertDialogQueue.showDialog(
+                    getString(R.string.failed_to_boot),
+                    getString(R.string.error_with_msg, bootResult.name)
+                )
                 finish()
             }
         }

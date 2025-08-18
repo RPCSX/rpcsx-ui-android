@@ -48,6 +48,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.viewinterop.AndroidView
@@ -255,7 +256,7 @@ fun ControlPanel(
                     Icon(Icons.Default.Close, contentDescription = "Disabled Button")
                 }
                 Text(
-                    text = "Control Panel",
+                    text = stringResource(R.string.control_panel),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleLarge,
@@ -275,7 +276,7 @@ fun ControlPanel(
             Spacer(modifier = Modifier.height(5.dp))
             
             Text(
-                text = "Editing: $currentButtonName",
+                text = stringResource(R.string.editing) + currentButtonName,
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -339,9 +340,9 @@ fun ControlPanel(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     if (currentButtonName != "Everything") {
-                        SliderComponent("Scale", scaleValue, onScaleChange)
+                        SliderComponent(stringResource(R.string.scale), scaleValue, onScaleChange)
                         Spacer(modifier = Modifier.height(6.dp))
-                        SliderComponent("Opacity", opacityValue, onOpacityChange)
+                        SliderComponent(stringResource(R.string.opacity), opacityValue, onOpacityChange)
                     }
                 }
 
@@ -382,19 +383,18 @@ fun SliderComponent(label: String, value: Float, onValueChange: (Float) -> Unit)
 
 @Composable
 fun ResetDialog(buttonName: String, onConfirm: () -> Unit, onDismiss: () -> Unit) {
-    val toBeReset = if (buttonName == "Everything") "everything" else "this button"
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Reset $buttonName") },
-        text = { Text(text = "Are you sure you want to reset ${toBeReset}?") },
+        title = { Text(stringResource(R.string.ask_if_reset_button, buttonName)) },
+        text = { Text(stringResource(R.string.ask_if_reset_button_description, buttonName)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(text = "Confirm")
+                Text(stringResource(android.R.string.ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(text = "Cancel")
+                Text(stringResource(android.R.string.cancel))
             }
         }
     )

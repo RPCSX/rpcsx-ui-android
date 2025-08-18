@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -100,7 +101,7 @@ fun GameItem(game: Game) {
                 val fd = descriptor?.parcelFileDescriptor?.fd
 
                 if (fd != null) {
-                    val installProgress = ProgressRepository.create(context, "License Installation")
+                    val installProgress = ProgressRepository.create(context, context.getString(R.string.license_installation))
 
                     game.addProgress(GameProgress(installProgress, GameProgressType.Compile))
 
@@ -134,11 +135,11 @@ fun GameItem(game: Game) {
             expanded = menuExpanded.value, onDismissRequest = { menuExpanded.value = false }) {
             if (game.progressList.isEmpty()) {
                 DropdownMenuItem(
-                    text = { Text("Delete") },
+                    text = { Text(stringResource(R.string.delete)) },
                     leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
                     onClick = {
                         menuExpanded.value = false
-                        val deleteProgress = ProgressRepository.create(context, "Deleting Game")
+                        val deleteProgress = ProgressRepository.create(context, context.getString(R.string.deleting_game))
                         game.addProgress(GameProgress(deleteProgress, GameProgressType.Compile))
                         ProgressRepository.onProgressEvent(deleteProgress, 1, 0L)
                         val path = File(game.info.path)
@@ -150,9 +151,9 @@ fun GameItem(game: Game) {
                             ) { success ->
                                 if (!success) {
                                     AlertDialogQueue.showDialog(
-                                        title = "Unexpected Error",
-                                        message = "Failed to delete game cache",
-                                        confirmText = "Close",
+                                        title = context.getString(R.string.unexpected_error),
+                                        message = context.getString(R.string.failed_to_delete_game_cache),
+                                        confirmText = context.getString(R.string.close),
                                         dismissText = ""
                                     )
                                 }
@@ -172,11 +173,11 @@ fun GameItem(game: Game) {
                 .combinedClickable(onClick = click@{
                     if (game.hasFlag(GameFlag.Locked)) {
                         AlertDialogQueue.showDialog(
-                            title = "Missing key",
-                            message = "This game requires key to play",
+                            title = context.getString(R.string.missing_key),
+                            message = context.getString(R.string.game_require_key),
                             onConfirm = { installKeyLauncher.launch("*/*") },
                             onDismiss = {},
-                            confirmText = "Install RAP file"
+                            confirmText = context.getString(R.string.install_rap_file)
                         )
 
                         return@click
@@ -184,13 +185,13 @@ fun GameItem(game: Game) {
 
                     if (FirmwareRepository.version.value == null) {
                         AlertDialogQueue.showDialog(
-                            title = "Firmware Missing",
-                            message = "Please install the required firmware to continue."
+                            title = context.getString(R.string.missing_firmware),
+                            message = context.getString(R.string.install_firmware_to_continue)
                         )
                     } else if (FirmwareRepository.progressChannel.value != null) {
                         AlertDialogQueue.showDialog(
-                            title = "Firmware Missing",
-                            message = "Please wait until firmware installs successfully to continue."
+                            title = context.getString(R.string.missing_firmware),
+                            message = context.getString(R.string.wait_until_firmware_install)
                         )
                     } else if (game.info.path != "$" && game.findProgress(
                             arrayOf(
@@ -200,8 +201,8 @@ fun GameItem(game: Game) {
                     ) {
                         if (game.findProgress(GameProgressType.Compile) != null) {
                             AlertDialogQueue.showDialog(
-                                title = "Game compiling isn't finished yet",
-                                message = "Please wait until game compiles to continue."
+                                title = context.getString(R.string.game_compiling_not_finished),
+                                message = context.getString(R.string.wait_until_game_compile)
                             )
                         } else {
                             GameRepository.onBoot(game)
@@ -383,8 +384,9 @@ fun GamesScreen() {
         AlertDialog(
             onDismissRequest = { if (!uiUpdate) uiUpdateVersion = null },
             title = {
-                if (uiUpdate) Text("Downloading RPCSX UI Android $uiUpdateVersion") else Text(
-                    "UI Update Available"
+                Text(
+                    if (uiUpdate) stringResource(R.string.downloading_ui, uiUpdateVersion!!)
+                    else stringResource(R.string.ui_update_available)
                 )
             },
             text = {
@@ -403,7 +405,7 @@ fun GamesScreen() {
                         }
                     } else {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Current version: ${BuildConfig.Version}\nNew version: $uiUpdateVersion\n")
+                        Text(stringResource(R.string.current_and_new_version, BuildConfig.Version, uiUpdateVersion!!))
                     }
                 }
             },
@@ -428,7 +430,7 @@ fun GamesScreen() {
                             }
                         }
                     }) {
-                        Text("Update")
+                        Text(stringResource(R.string.update))
                     }
                 }
             })
@@ -437,8 +439,8 @@ fun GamesScreen() {
     if (rpcsxLibrary == null && rpcsxUpdateVersion == null && !rpcsxUpdate && activeDialogs.isEmpty()) {
         AlertDialog(
             onDismissRequest = { },
-            title = { Text("RPCSX library is missed") },
-            text = { Text("Downloading latest RPCSX") },
+            title = { Text(stringResource(R.string.missing_rpcsx_lib)) },
+            text = { Text(stringResource(R.string.downloading_latest_rpcsx)) },
             confirmButton = {}
         )
     }
@@ -474,7 +476,12 @@ fun GamesScreen() {
             onDismissRequest = {
                 if (!rpcsxUpdate && rpcsxLibrary != null) rpcsxUpdateVersion = null
             },
-            title = { if (rpcsxUpdate) Text("Downloading RPCSX $rpcsxUpdateVersion") else Text("RPCSX Update Available") },
+            title = {
+                Text(
+                    if (rpcsxUpdate) stringResource(R.string.downloading_rpcsx, rpcsxUpdateVersion!!)
+                    else stringResource(R.string.rpcsx_update_available)
+                )
+            },
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -491,7 +498,13 @@ fun GamesScreen() {
                         }
                     } else {
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Current version: ${if (rpcsxLibrary != null) RpcsxUpdater.getCurrentVersion() else "None"}\nNew version: $rpcsxUpdateVersion\n")
+                        Text(
+                            stringResource(
+                                R.string.current_and_new_version,
+                                RpcsxUpdater.getCurrentVersion() ?: stringResource(R.string.none),
+                                rpcsxUpdateVersion!!
+                            )
+                        )
                     }
                 }
             },
@@ -500,7 +513,7 @@ fun GamesScreen() {
                     TextButton(onClick = {
                         startUpdate()
                     }) {
-                        Text("Update")
+                        Text(stringResource(R.string.update))
                     }
                 }
             })
@@ -529,21 +542,21 @@ fun GamesScreen() {
 
         AlertDialog(
             onDismissRequest = {},
-            title = { Text("Failed to download RPCSX") },
+            title = { Text(stringResource(R.string.failed_to_download_rpcsx)) },
             text = {},
             confirmButton = {
                 TextButton(onClick = {
                     rpcsxInstallLibraryFailed = false
                     coroutineScope.launch { checkForUpdates() }
                 }) {
-                    Text("Retry")
+                    Text(stringResource(R.string.retry))
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
                     installRpcsxLauncher.launch("*/*")
                 }) {
-                    Text("Install custom version")
+                    Text(stringResource(R.string.install_custom_version))
                 }
             })
     }

@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 object AlertDialogQueue {
@@ -36,8 +37,8 @@ object AlertDialogQueue {
         message: String? = null,
         onConfirm: () -> Unit = {},
         onDismiss: (() -> Unit)? = null,
-        confirmText: String = "OK",
-        dismissText: String = "Cancel"
+        confirmText: String = "OK",    // auto -> android.R.string.ok
+        dismissText: String = "Cancel" // auto -> android.R.string.cancel
     ) {
         dialogs.add(DialogData(title, message, onConfirm, onDismiss, confirmText, dismissText))
     }
@@ -113,7 +114,7 @@ object AlertDialogQueue {
                                     dismissDialog()
                                 }
                             ) {
-                                Text(text = dialog.dismissText)
+                                Text(if (dialog.dismissText == "Cancel") stringResource(android.R.string.cancel) else dialog.dismissText)
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             TextButton(
@@ -123,7 +124,7 @@ object AlertDialogQueue {
                                 }, 
                                 modifier = Modifier.padding(end = 16.dp)
                             ) {
-                                Text(text = dialog.confirmText)
+                                Text(if (dialog.confirmText == "OK") stringResource(android.R.string.ok) else dialog.confirmText)
                             }
                         }
                     }

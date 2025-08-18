@@ -1,3 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">RPCSX</string>
+    <string name="app_name" translatable="false">RPCSX</string>
+
+    <string name="add">Add</string>
+    <string name="close">Close</string>
+    <string name="error">Error</string>
+    <string name="export">Export</string>
+    <string name="import_">Import</string>
+    <string name="none">None</string>
+    <string name="reset">Reset</string>
+
+    <!-- AppNavHost -->
+    <string name="about">About</string>
+    <string name="copied_to_clipboard">Copied to clipboard!</string>
+    <string name="device_info">Device Info</string>
+    <string name="driver_download_channel">GPU Driver Download Channel</string>
+    <string name="edit_overlay">Edit Overlay</string>
+    <string name="firmware_version">Firmware: </string>
+    <string name="rpcsx_download_channel">RPCSX Download Channel</string>
+    <string name="settings">Settings</string>
+    <string name="ui_update_channel">RPCSX UI Android Update Channel</string>
+
+    <!-- FileUtil -->
+    <string name="installing_dir">Installing directory</string>
+
+    <!-- GamesScreen -->
+    <string name="current_and_new_version">Current version: %1$s\nNew version: %2$s</string>
+    <string name="deleting_game">Deleting Game</string>
+    <string name="delete">Delete</string>
+    <string name="downloading_latest_rpcsx">Downloading latest RPCSX</string>
+    <string name="downloading_rpcsx">Downloading RPCSX %1$s</string>
+    <string name="downloading_ui">Downloading RPCSX UI Android %1$s</string>
+    <string name="failed_to_delete_game_cache">Failed to delete game cache</string>
+    <string name="failed_to_download_rpcsx">Failed to download RPCSX</string>
+    <string name="game_compiling_not_finished">Game compiling isn\'t finished yet</string>
+    <string name="game_require_key">This game requires key to play</string>
+    <string name="install_custom_version">Install custom version</string>
+    <string name="install_firmware_to_continue">Please install the required firmware to continue.</string>
+    <string name="install_rap_file">Install RAP file</string>
+    <string name="license_installation">License Installation</string>
+    <string name="missing_firmware">Missing Firmware</string>
+    <string name="missing_key">Missing Key</string>
+    <string name="missing_rpcsx_lib">Missing RPCSX Library</string>
+    <string name="retry">Retry</string>
+    <string name="rpcsx_update_available">RPCSX Update Available</string>
+    <string name="ui_update_available">UI Update Available</string>
+    <string name="unexpected_error">Unexpected Error</string>
+    <string name="update">Update</string>
+    <string name="wait_until_firmware_install">Please wait until firmware installs successfully to continue.</string>
+    <string name="wait_until_game_compile">Please wait until game compiles to continue.</string>
+
+    <!-- GpuDriversScreen -->
+    <string name="choose">Choose</string>
+    <string name="download">Download</string>
+    <string name="downloading">Downloading…</string>
+    <string name="drivers">Drivers</string>
+    <string name="failed_to_load_selected_driver">Failed to load selected driver</string>
+    <string name="fetching">Fetching…</string>
+    <string name="install">Install</string>
+    <string name="installing">Installing…</string>
+    <string name="please_wait">Please wait</string>
+    <string name="select_driver">Select a GPU Driver</string>
+
+    <!-- MainActivity -->
+    <string name="failed_to_load_new_version">Failed to load new version, previous version was restored</string>
+    <string name="failed_to_update_rpcsx">Failed to update RPCSX</string>
+
+    <!-- OverlayEditActivity -->
+    <string name="ask_if_reset_button">Reset %1$s?</string>
+    <string name="ask_if_reset_button_description">Are you sure you want to reset %1$s?</string>
+    <string name="control_panel">Control Panel</string>
+    <string name="editing">Editing: </string>
+    <string name="opacity">Opacity</string>
+    <string name="scale">Scale</string>
+
+    <!-- PrecompilerService -->
+    <string name="firmware_installation">Firmware Installation</string>
+    <string name="package_installation">Package Installation</string>
+
+    <!-- RPCSXActivity -->
+    <string name="error_with_msg">Error: %1$s</string>
+    <string name="failed_to_boot">Failed to boot</string>
+
+    <!-- RpcsxUpdater -->
+    <string name="restart_ui_to_apply_change">Restart RPCSX UI to apply change</string>
+
+    <!-- SettingsScreen -->
+    <string name="active_user">Active User: </string>
+    <string name="advanced_settings">Advanced Settings</string>
+    <string name="advanced_settings_description">Configure emulator advanced settings</string>
+    <string name="ask_if_reset_key">"Do you want to reset '%1$s' to its default value?"</string>
+    <string name="controls">Controls</string>
+    <string name="controls_description">Configure controller</string>
+    <string name="custom_driver">Custom GPU Driver</string>
+    <string name="custom_driver_description">Install alternative drivers for potentially better performance or accuracy</string>
+    <string name="custom_driver_not_supported">Custom driver not supported</string>
+    <string name="custom_driver_not_supported_description">Custom driver loading isn\'t currently supported for this device.</string>
+    <string name="download_channels">Download Channels</string>
+    <string name="enable_haptic_feedback">Enable Haptic Feedback</string>
+    <string name="failed_to_assign_value">Failed to assign value %1$s to %2$s</string>
+    <string name="failed_to_reset_key">Failed to reset %1$s</string>
+    <string name="failed_to_view_internal_dir">Failed to view internal directory</string>
+    <string name="gamepad_overlay">Gamepad Overlay</string>
+    <string name="install_custom_rpcsx_lib">Install Custom RPCSX Library</string>
+    <string name="key_mappings">Key Mappings</string>
+    <string name="log_not_found">Log file not found!</string>
+    <string name="manage_settings">Manage Settings</string>
+    <string name="no_activity_to_handle_action">No activity found to handle this action</string>
+    <string name="perform_input">Perform Input</string>
+    <string name="reset_setting">Reset Setting</string>
+    <string name="search_settings">Search Settings…</string>
+    <string name="share_log">Share Log</string>
+    <string name="share_log_description">Share RPCSX\'s log file to help debug issues</string>
+    <string name="users">Users</string>
+    <string name="view_internal_dir">View Internal Directory</string>
+    <string name="view_internal_dir_description">Open internal directory of RPCSX in file manager</string>
+
+    <!-- SliderPreference -->
+    <string name="slider_value_supporting">Value must be a multiple of step size %1$d within %2$.0f to %3$.0f</string>
+    <string name="value">Value</string>
+
+    <!-- UiUpdater -->
+    <string name="failed_to_update_ui">Failed to update UI</string>
+    <string name="permission_required">Permission Required</string>
+    <string name="permission_required_description">Enable install from this source permission to update.</string>
+
+    <!-- UpdateChannelListScreen -->
+    <string name="enter_repo_url">Enter Repository URL</string>
+    <string name="select_repo">Select Repository</string>
+
+    <!-- UsersScreen -->
+    <string name="ask_if_stop_emu">Stop Emulator?</string>
+    <string name="ask_if_stop_emu_description">In order to change the user, you have to stop the emulator first.\n\nStop the emulator now?</string>
 </resources>
