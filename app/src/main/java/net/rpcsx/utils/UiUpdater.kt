@@ -11,6 +11,7 @@ import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.rpcsx.BuildConfig
+import net.rpcsx.R
 import net.rpcsx.dialogs.AlertDialogQueue
 import java.io.File
 
@@ -27,7 +28,10 @@ class PackageInstallStatusReceiver : BroadcastReceiver() {
             else -> {
                 val msg = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
 
-                AlertDialogQueue.showDialog("UI Update Error", msg ?: "Unexpected error")
+                AlertDialogQueue.showDialog(
+                    context.getString(R.string.failed_to_update_ui),
+                    msg ?: context.getString(R.string.unexpected_error)
+                )
             }
         }
     }
@@ -89,12 +93,15 @@ object UiUpdater {
                             return target
                         }
                         is GitHub.DownloadStatus.Error ->
-                            AlertDialogQueue.showDialog("UI Update Download Error", downloadStatus.message ?: "Unexpected error")
+                            AlertDialogQueue.showDialog(
+                                context.getString(R.string.failed_to_update_ui),
+                                downloadStatus.message ?: context.getString(R.string.unexpected_error)
+                            )
                     }
                 }
             }
             is GitHub.FetchResult.Error -> {
-                AlertDialogQueue.showDialog("UI Update Error", fetchResult.message)
+                AlertDialogQueue.showDialog(context.getString(R.string.failed_to_update_ui), fetchResult.message)
             }
         }
 
@@ -104,8 +111,8 @@ object UiUpdater {
     fun installUpdate(context: Context, updateFile: File): Boolean {
         if (!context.packageManager.canRequestPackageInstalls()) {
             AlertDialogQueue.showDialog(
-                "Permission required",
-                "Enable install from this source permission to update",
+                title = context.getString(R.string.permission_required),
+                message = context.getString(R.string.permission_required_description),
                 onConfirm = {
                     val intent: Intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
                         .setData(String.format("package:%s", context.packageName).toUri())

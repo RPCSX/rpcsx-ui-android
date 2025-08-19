@@ -36,8 +36,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.rpcsx.EmulatorState
+import net.rpcsx.R
 import net.rpcsx.RPCSX
 import net.rpcsx.User
 import net.rpcsx.UserRepository
@@ -83,6 +86,7 @@ fun UsersScreen(
     val users = remember { UserRepository.users }
     val activeUser by remember { UserRepository.activeUser }
     val emulatorState by remember { RPCSX.state }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         UserRepository.load()
@@ -93,7 +97,7 @@ fun UsersScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Users")
+                    Text(stringResource(R.string.users))
                 },
                 navigationIcon = {
                     IconButton(onClick = navigateBack) {
@@ -123,8 +127,8 @@ fun UsersScreen(
                         setActive = {
                             if (emulatorState != EmulatorState.Stopped) {
                                 AlertDialogQueue.showDialog(
-                                    title = "Stop Emulator?",
-                                    message = "In order to change the user you have to stop the emulator first.\n\nStop the emulator now?",
+                                    title = context.getString(R.string.ask_if_stop_emu),
+                                    message = context.getString(R.string.ask_if_stop_emu_description),
                                     onConfirm = {
                                         RPCSX.instance.kill()
                                         RPCSX.updateState()

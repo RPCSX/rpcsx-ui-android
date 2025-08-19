@@ -69,6 +69,7 @@ import androidx.core.content.edit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.rpcsx.R
 import net.rpcsx.RPCSX
 import net.rpcsx.dialogs.AlertDialogQueue
 import net.rpcsx.ui.channels.DefaultGpuDriverChannel
@@ -168,7 +169,7 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
 
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, topBar = {
         TopAppBar(
-            title = { Text(text = "GPU Drivers", fontWeight = FontWeight.Medium) },
+            title = { Text(text = stringResource(R.string.custom_driver), fontWeight = FontWeight.Medium) },
             scrollBehavior = topBarScrollBehavior,
             navigationIcon = {
                 IconButton(
@@ -185,7 +186,7 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Select a GPU Driver",
+                text = stringResource(R.string.select_driver),
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(bottom = 16.dp),
                 color = MaterialTheme.colorScheme.onSurface
@@ -211,7 +212,10 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
 
                                     Log.w("Driver", "path $path, internal data dir ${context.filesDir}")
                                     if (!RPCSX.instance.setCustomDriver(path, metadata.libraryName, RPCSX.nativeLibDirectory)) {
-                                        AlertDialogQueue.showDialog("Custom Driver Error", "Failed to load selected driver")
+                                        AlertDialogQueue.showDialog(
+                                            context.getString(R.string.error),
+                                            context.getString(R.string.failed_to_load_selected_driver)
+                                        )
                                     } else {
                                         selectedDriver = metadata.label     
                                         GeneralSettings.setValue("selected_gpu_driver", selectedDriver ?: "")
@@ -263,7 +267,7 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
                         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 4.dp)
                     ) {
                         if (isInstalling) {
-                            Text("Installing...")
+                            Text(stringResource(R.string.installing))
                         } else {
                             Icon(
                                 imageVector = Icons.Default.Add,
@@ -283,16 +287,16 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
 fun DriverDialog(
     onDismiss: () -> Unit, onInstallClick: () -> Unit, onImportClick: () -> Unit
 ) {
-    val items = listOf(
-        "Download", "Install"
-    )
     var selectedItemIndex by remember { mutableIntStateOf(0) }
 
     AlertDialog(onDismissRequest = onDismiss, title = {
-        Text(text = "Choose")
+        Text(stringResource(R.string.choose))
     }, text = {
         Column {
-            items.forEachIndexed { index, text ->
+            listOf(
+                stringResource(R.string.download),
+                stringResource(R.string.install),
+            ).forEachIndexed { index, text ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -359,7 +363,7 @@ fun FetchAndShowDrivers(
 
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("Error") },
+            title = { Text(stringResource(R.string.error)) },
             text = { Text(errorMessage) },
             confirmButton = {
                 TextButton(onClick = onDismiss) {
@@ -370,14 +374,14 @@ fun FetchAndShowDrivers(
     }
 
     if (isLoading) {
-        AlertDialog(onDismissRequest = onDismiss, title = { Text("Fetching") }, text = {
+        AlertDialog(onDismissRequest = onDismiss, title = { Text(stringResource(R.string.fetching)) }, text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Please wait")
+                Text(stringResource(R.string.please_wait))
             }
         }, confirmButton = {})
         return
@@ -397,7 +401,7 @@ fun FetchAndShowDrivers(
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     Text(
-                        "Drivers",
+                        text = stringResource(R.string.drivers),
                         modifier = Modifier.padding(horizontal = 16.dp),
                         style = MaterialTheme.typography.headlineSmall
                     )
@@ -447,7 +451,7 @@ fun FetchAndShowDrivers(
                                 onDismiss()
                             }, modifier = Modifier.padding(end = 16.dp)
                         ) {
-                            Text(text = "Import")
+                            Text(stringResource(R.string.download))
                         }
                     }
                 }
@@ -502,7 +506,7 @@ fun DownloadDriver(
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         context,
-                        "Failed to import $chosenName: ${result.message}",
+                        context.getString(R.string.error_with_msg, result.message),
                         Toast.LENGTH_SHORT
                     ).show()
                     onDismiss()
@@ -515,7 +519,7 @@ fun DownloadDriver(
 
     AlertDialog(
         onDismissRequest = { if (!isIndeterminate) onDismiss() },
-        title = { Text("Downloading") },
+        title = { Text(stringResource(R.string.downloading)) },
         text = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 // we can't set indeterminate explicitly so.
@@ -538,7 +542,7 @@ fun DownloadDriver(
         confirmButton = {
             if (downloadCompleted) {
                 TextButton(onClick = onDismiss) {
-                    Text("OK")
+                    Text(stringResource(android.R.string.ok))
                 }
             }
         })

@@ -58,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -276,7 +277,7 @@ fun AppNavHost() {
         ) {
             UpdateChannelListScreen(
                 navigateBack = navController::navigateUp,
-                title = "GPU Driver Download Channel",
+                title = stringResource(R.string.driver_download_channel),
                 items = gpuDriverChannels.toList(),
                 selected = prefs.getString("gpu_driver_channel", null),
                 onSelect = { channel ->
@@ -312,7 +313,7 @@ fun AppNavHost() {
         ) {
             UpdateChannelListScreen(
                 navigateBack = navController::navigateUp,
-                title = "RPCSX UI Android Update Channel",
+                title = stringResource(R.string.ui_update_channel),
                 items = channelsToUiText(uiChannels, ReleaseUiChannel, DevUiChannel),
                 selected = channelToUiText(
                     prefs.getString("ui_channel", ReleaseUiChannel)!!,
@@ -368,7 +369,7 @@ fun AppNavHost() {
             var downloadArch by remember { mutableStateOf(RpcsxUpdater.getArch()) }
             UpdateChannelListScreen(
                 navigateBack = navController::navigateUp,
-                title = "RPCSX Download Channel",
+                title = stringResource(R.string.rpcsx_download_channel),
                 items = channelsToUiText(rpcsxChannels, ReleaseRpcsxChannel, DevRpcsxChannel),
                 selected = channelToUiText(
                     prefs.getString("rpcsx_channel", ReleaseRpcsxChannel)!!,
@@ -514,7 +515,7 @@ fun GamesDestination(
                     NavigationDrawerItem(
                         label = {
                             Text(
-                                "Firmware: " + (FirmwareRepository.version.value ?: "None")
+                                stringResource(R.string.firmware_version) + (FirmwareRepository.version.value ?: stringResource(R.string.none))
                             )
                         },
                         selected = false,
@@ -556,14 +557,14 @@ fun GamesDestination(
                     )
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                     NavigationDrawerItem(
-                        label = { Text("Settings") },
+                        label = { Text(stringResource(R.string.settings)) },
                         selected = false,
                         icon = { Icon(Icons.Default.Settings, null) },
                         onClick = navigateToSettings
                     )
 
                     NavigationDrawerItem(
-                        label = { Text("Edit Overlay") },
+                        label = { Text(stringResource(R.string.edit_overlay)) },
                         selected = false,
                         icon = {
                             Icon(
@@ -582,26 +583,26 @@ fun GamesDestination(
                     )
 
                     NavigationDrawerItem(
-                        label = { Text("System Info") },
+                        label = { Text(stringResource(R.string.device_info)) },
                         selected = false,
                         icon = { Icon(painterResource(R.drawable.perm_device_information), contentDescription = null) },
                         onClick = {
                             AlertDialogQueue.showDialog(
-                                "System Info",
+                                context.getString(R.string.device_info),
                                 RPCSX.instance.systemInfo(),
-                                confirmText = "Copy",
-                                dismissText = "Cancel",
+                                confirmText = context.getString(android.R.string.copy),
+                                dismissText = context.getString(R.string.close),
                                 onConfirm = {
                                     val clipboard =
                                         context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     val clip = ClipData.newPlainText(
-                                        "System Info",
+                                        context.getString(R.string.device_info),
                                         RPCSX.instance.systemInfo()
                                     )
                                     clipboard.setPrimaryClip(clip)
                                     Toast.makeText(
                                         context,
-                                        "Copied to clipboard!",
+                                        context.getString(R.string.copied_to_clipboard),
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -612,14 +613,15 @@ fun GamesDestination(
                     HorizontalDivider()
 
                     NavigationDrawerItem(
-                        label = { Text("About") },
+                        label = { Text(stringResource(R.string.about)) },
                         selected = false,
                         icon = { Icon(Icons.Outlined.Info, contentDescription = null) },
                         onClick = {
                             AlertDialogQueue.showDialog(
                                 "RPCSX UI Android",
-                                "UI ${BuildConfig.Version}\nRPCSX ${RpcsxUpdater.getCurrentVersion()}",
-                                confirmText = "Copy",
+                                "UI: ${BuildConfig.Version}\nRPCSX: ${RpcsxUpdater.getCurrentVersion()}",
+                                confirmText = context.getString(android.R.string.copy),
+                                dismissText = context.getString(R.string.close),
                             )
                         }
                     )

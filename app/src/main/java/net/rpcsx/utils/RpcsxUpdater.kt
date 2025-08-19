@@ -5,6 +5,7 @@ import android.content.Intent
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.rpcsx.R
 import net.rpcsx.RPCSX
 import net.rpcsx.dialogs.AlertDialogQueue
 import net.rpcsx.ui.channels.DevRpcsxChannel
@@ -151,9 +152,11 @@ object RpcsxUpdater {
 
         GeneralSettings["rpcsx_prev_library"] = prevLibrary
         GeneralSettings["rpcsx_prev_installed_arch"] = prevArch
-        AlertDialogQueue.showDialog("RPCSX Update", "Restart RPCSX UI to apply change", onConfirm = {
-            restart()
-        })
+        AlertDialogQueue.showDialog(
+            title = context.getString(R.string.rpcsx_update_available),
+            message = context.getString(R.string.restart_ui_to_apply_change),
+            onConfirm = { restart() }
+        )
         return true
     }
 }

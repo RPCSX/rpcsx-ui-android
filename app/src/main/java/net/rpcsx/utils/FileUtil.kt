@@ -20,6 +20,7 @@ import net.rpcsx.GameRepository
 import net.rpcsx.PrecompilerService
 import net.rpcsx.PrecompilerServiceAction
 import net.rpcsx.ProgressRepository
+import net.rpcsx.R
 import net.rpcsx.RPCSX
 import net.rpcsx.provider.AppDataDocumentProvider
 import java.io.BufferedInputStream
@@ -87,7 +88,7 @@ object FileUtil {
                     return@forEach
                 }
 
-                val progress = ProgressRepository.create(context, "Installing Directory")
+                val progress = ProgressRepository.create(context, context.getString(R.string.installing_dir))
                 GameRepository.add(arrayOf(GameInfo("$")), progress)
                 copyDirUriToInternalStorage(context, it.uri, it.targetPath, progress)
                 RPCSX.instance.collectGameInfo(it.targetPath, -1L)

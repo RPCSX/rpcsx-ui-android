@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import net.rpcsx.R
 import net.rpcsx.ui.settings.components.core.DeletableListItem
 
 
@@ -48,7 +49,7 @@ fun RepositoryAddDialog(onDismiss: () -> Unit, onAdd: (path: String) -> Unit) {
     var textInputValue by remember { mutableStateOf("https://github.com/") }
 
     AlertDialog(onDismissRequest = onDismiss, title = {
-        Text(text = "Enter Repository URL")
+        Text(stringResource(R.string.enter_repo_url))
     }, text = {
         Column {
             OutlinedTextField(
@@ -65,7 +66,7 @@ fun RepositoryAddDialog(onDismiss: () -> Unit, onAdd: (path: String) -> Unit) {
             }
             onDismiss()
         }) {
-            Text(text = "Add")
+            Text(stringResource(R.string.add))
         }
     }, dismissButton = {
         TextButton(onClick = onDismiss) {
@@ -120,7 +121,7 @@ fun UpdateChannelListScreen(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Select Repository",
+                text = stringResource(R.string.select_repo),
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(bottom = 16.dp),
                 color = MaterialTheme.colorScheme.onSurface

@@ -65,6 +65,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -161,7 +162,7 @@ fun AdvancedSettingsScreen(
                             ) {
                                 if (searchQuery.isEmpty()) {
                                     Text(
-                                        text = "Search settings...",
+                                        text = stringResource(R.string.search_settings),
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
@@ -170,7 +171,7 @@ fun AdvancedSettingsScreen(
                         })
                 } else {
                     Text(
-                        text = titlePath.ifEmpty { "Advanced Settings" },
+                        text = titlePath.ifEmpty { stringResource(R.string.advanced_settings) },
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -239,8 +240,8 @@ fun AdvancedSettingsScreen(
                                             )
                                         ) {
                                             AlertDialogQueue.showDialog(
-                                                "Setting error",
-                                                "Failed to assign $itemPath value $value"
+                                                context.getString(R.string.error),
+                                                context.getString(R.string.failed_to_assign_value, value.toString(), itemPath)
                                             )
                                         } else {
                                             itemObject.put("value", value)
@@ -249,8 +250,8 @@ fun AdvancedSettingsScreen(
                                     },
                                     onLongClick = {
                                         AlertDialogQueue.showDialog(
-                                            title = "Reset Setting",
-                                            message = "Do you want to reset '$key' to its default value?",
+                                            title = context.getString(R.string.reset_setting),
+                                            message = context.getString(R.string.ask_if_reset_key, key),
                                             onConfirm = {
                                                 if (RPCSX.instance.settingsSet(
                                                         itemPath, def.toString()
@@ -260,7 +261,8 @@ fun AdvancedSettingsScreen(
                                                     itemValue = def
                                                 } else {
                                                     AlertDialogQueue.showDialog(
-                                                        "Setting error", "Failed to reset $key"
+                                                        context.getString(R.string.error),
+                                                        context.getString(R.string.failed_to_reset_key, key)
                                                     )
                                                 }
                                             })
@@ -287,8 +289,8 @@ fun AdvancedSettingsScreen(
                                             )
                                         ) {
                                             AlertDialogQueue.showDialog(
-                                                "Setting error",
-                                                "Failed to assign $itemPath value $value"
+                                                context.getString(R.string.error),
+                                                context.getString(R.string.failed_to_assign_value, value, itemPath)
                                             )
                                         } else {
                                             itemObject.put("value", value)
@@ -297,8 +299,8 @@ fun AdvancedSettingsScreen(
                                     },
                                     onLongClick = {
                                         AlertDialogQueue.showDialog(
-                                            title = "Reset Setting",
-                                            message = "Do you want to reset '$key' to its default value?",
+                                            title = context.getString(R.string.reset_setting),
+                                            message = context.getString(R.string.ask_if_reset_key, key),
                                             onConfirm = {
                                                 if (RPCSX.instance.settingsSet(
                                                         itemPath, "\"" + def + "\""
@@ -308,7 +310,8 @@ fun AdvancedSettingsScreen(
                                                     itemValue = def
                                                 } else {
                                                     AlertDialogQueue.showDialog(
-                                                        "Setting error", "Failed to reset $key"
+                                                        context.getString(R.string.error),
+                                                        context.getString(R.string.failed_to_reset_key, key)
                                                     )
                                                 }
                                             })
@@ -341,8 +344,8 @@ fun AdvancedSettingsScreen(
                                                 )
                                             ) {
                                                 AlertDialogQueue.showDialog(
-                                                    "Setting error",
-                                                    "Failed to assign $itemPath value $value"
+                                                    context.getString(R.string.error),
+                                                    context.getString(R.string.failed_to_assign_value, value.toString(), itemPath)
                                                 )
                                             } else {
                                                 itemObject.put(
@@ -354,8 +357,8 @@ fun AdvancedSettingsScreen(
                                         valueContent = { PreferenceValue(text = itemValue.toString()) },
                                         onLongClick = {
                                             AlertDialogQueue.showDialog(
-                                                title = "Reset Setting",
-                                                message = "Do you want to reset '$key' to its default value?",
+                                                title = context.getString(R.string.reset_setting),
+                                                message = context.getString(R.string.ask_if_reset_key, key),
                                                 onConfirm = {
                                                     if (RPCSX.instance.settingsSet(
                                                             itemPath, def.toString()
@@ -365,7 +368,8 @@ fun AdvancedSettingsScreen(
                                                         itemValue = def
                                                     } else {
                                                         AlertDialogQueue.showDialog(
-                                                            "Setting error", "Failed to reset $key"
+                                                            context.getString(R.string.error),
+                                                            context.getString(R.string.failed_to_reset_key, key)
                                                         )
                                                     }
                                                 })
@@ -401,8 +405,8 @@ fun AdvancedSettingsScreen(
                                                 )
                                             ) {
                                                 AlertDialogQueue.showDialog(
-                                                    "Setting error",
-                                                    "Failed to assign $itemPath value $value"
+                                                    context.getString(R.string.error),
+                                                    context.getString(R.string.failed_to_assign_value, value.toString(), itemPath)
                                                 )
                                             } else {
                                                 itemObject.put("value", value.toDouble().toString())
@@ -412,8 +416,8 @@ fun AdvancedSettingsScreen(
                                         valueContent = { PreferenceValue(text = itemValue.toString()) },
                                         onLongClick = {
                                             AlertDialogQueue.showDialog(
-                                                title = "Reset Setting",
-                                                message = "Do you want to reset '$key' to its default value?",
+                                                title = context.getString(R.string.reset_setting),
+                                                message = context.getString(R.string.ask_if_reset_key, key),
                                                 onConfirm = {
                                                     if (RPCSX.instance.settingsSet(
                                                             itemPath, def.toString()
@@ -423,7 +427,8 @@ fun AdvancedSettingsScreen(
                                                         itemValue = def
                                                     } else {
                                                         AlertDialogQueue.showDialog(
-                                                            "Setting error", "Failed to reset $key"
+                                                            context.getString(R.string.error),
+                                                            context.getString(R.string.failed_to_reset_key, key)
                                                         )
                                                     }
                                                 })
@@ -442,9 +447,10 @@ fun AdvancedSettingsScreen(
             if (path.isEmpty()) {
                 item(key = "install_dev_rpcsx") {
                     RegularPreference(
-                        title = "Install Custom RPCSX library", leadingIcon = null, onClick = {
-                            installRpcsxLauncher.launch("*/*")
-                        })
+                        title = stringResource(R.string.install_custom_rpcsx_lib),
+                        leadingIcon = null,
+                        onClick = { installRpcsxLauncher.launch("*/*") }
+                    )
                 }
             }
         }
@@ -468,7 +474,7 @@ fun SettingsScreen(
             .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
             .then(modifier), topBar = {
             LargeTopAppBar(
-                title = { Text(text = "Settings", fontWeight = FontWeight.Medium) },
+                title = { Text(text = stringResource(R.string.settings), fontWeight = FontWeight.Medium) },
                 scrollBehavior = topBarScrollBehavior,
                 navigationIcon = {
                     IconButton(
@@ -510,14 +516,14 @@ fun SettingsScreen(
                 key = "internal_directory"
             ) {
                 HomePreference(
-                    title = "View Internal Directory",
+                    title = stringResource(R.string.view_internal_dir),
                     icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_folder)) },
-                    description = "Open internal directory of RPCSX in file manager",
+                    description = stringResource(R.string.view_internal_dir_description),
                     onClick = {
                         if (!FileUtil.launchInternalDir(context)) {
                             AlertDialogQueue.showDialog(
-                                "View Internal Directory Error",
-                                "No Activity found to handle this action"
+                                context.getString(R.string.failed_to_view_internal_dir),
+                                context.getString(R.string.no_activity_to_handle_action)
                             )
                         }
                     }
@@ -528,8 +534,8 @@ fun SettingsScreen(
                 key = "users"
             ) {
                 HomePreference(
-                    title = "Users",
-                    description = "Active User: ${UserRepository.getUsername(activeUser)}",
+                    title = stringResource(R.string.users),
+                    description = stringResource(R.string.active_user) + UserRepository.getUsername(activeUser),
                     icon = {
                         PreferenceIcon(icon = Icons.Default.Person)
                     },
@@ -541,7 +547,7 @@ fun SettingsScreen(
 
             item(key = "update_channels") {
                 HomePreference(
-                    title = "Download Channels",
+                    title = stringResource(R.string.download_channels),
                     icon = { PreferenceIcon(icon = painterResource(R.drawable.ic_cloud_download)) },
                     description = "",
                     onClick = {
@@ -552,17 +558,17 @@ fun SettingsScreen(
 
             item(key = "advanced_settings") {
                 HomePreference(
-                    title = "Advanced Settings",
+                    title = stringResource(R.string.advanced_settings),
                     icon = { Icon(painterResource(R.drawable.tune), null) },
-                    description = "Configure emulator advanced settings",
+                    description = stringResource(R.string.advanced_settings_description),
                     onClick = {
                         navigateTo("settings@@$")
                     },
                     onLongClick = {
                         AlertDialogQueue.showDialog(
-                            title = "Manage Settings",
-                            confirmText = "Export",
-                            dismissText = "Import",
+                            title = context.getString(R.string.manage_settings),
+                            confirmText = context.getString(R.string.export),
+                            dismissText = context.getString(R.string.import_),
                             onDismiss = {
                                 configPicker.launch(arrayOf("*/*"))
                             },
@@ -575,20 +581,20 @@ fun SettingsScreen(
             }
 
             item(
-                key = "custom_gpu_driver"
+                key = "custom_driver"
             ) {
                 HomePreference(
-                    title = "Custom GPU Driver",
+                    title = stringResource(R.string.custom_driver),
                     icon = { Icon(painterResource(R.drawable.memory), contentDescription = null) },
-                    description = "Install alternative drivers for potentially better performance or accuracy",
+                    description = stringResource(R.string.custom_driver_description),
                     onClick = {
                         if (RPCSX.instance.supportsCustomDriverLoading()) {
                             navigateTo("drivers")
                         } else {
                             AlertDialogQueue.showDialog(
-                                title = "Custom drivers not supported",
-                                message = "Custom driver loading isn't currently supported for this device",
-                                confirmText = "Close",
+                                title = context.getString(R.string.custom_driver_not_supported),
+                                message = context.getString(R.string.custom_driver_not_supported_description),
+                                confirmText = context.getString(R.string.close),
                                 dismissText = ""
                             )
                         }
@@ -598,18 +604,18 @@ fun SettingsScreen(
 
             item(key = "controls") {
                 HomePreference(
-                    title = "Controls",
+                    title = stringResource(R.string.controls),
                     icon = { Icon(painterResource(R.drawable.gamepad), null) },
-                    description = "Configure controller",
+                    description = stringResource(R.string.controls_description),
                     onClick = { navigateTo("controls") }
                 )       
             }
 
             item(key = "share_logs") {
                 HomePreference(
-                    title = "Share Log",
+                    title = stringResource(R.string.share_log),
                     icon = { Icon(imageVector = Icons.Default.Share, contentDescription = null) },
-                    description = "Share RPCSX's log file to debug issues",
+                    description = stringResource(R.string.share_log_description),
                     onClick = {
                         val file = DocumentFile.fromSingleUri(
                             context, DocumentsContract.buildDocumentUri(
@@ -624,9 +630,9 @@ fun SettingsScreen(
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 putExtra(Intent.EXTRA_STREAM, file.uri)
                             }
-                            context.startActivity(Intent.createChooser(intent, "Share Log File"))
+                            context.startActivity(Intent.createChooser(intent, context.getString(R.string.share_log)))
                         } else {
-                            Toast.makeText(context, "Log file not found!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, context.getString(R.string.log_not_found), Toast.LENGTH_SHORT).show()
                         }
                     }
                 )
@@ -648,7 +654,7 @@ fun ControllerSettings(
             .then(modifier),
         topBar = {
             LargeTopAppBar(
-                title = { Text(text = "Configure Controller", fontWeight = FontWeight.Medium) },
+                title = { Text(text = stringResource(R.string.controls), fontWeight = FontWeight.Medium) },
                 scrollBehavior = topBarScrollBehavior,
                 navigationIcon = {
                     IconButton(
@@ -682,7 +688,7 @@ fun ControllerSettings(
             }
 
             item {
-                PreferenceHeader(text = "On-Screen Controls")
+                PreferenceHeader(stringResource(R.string.gamepad_overlay))
             }
 
             item {
@@ -694,7 +700,7 @@ fun ControllerSettings(
                 val def = true
                 SwitchPreference(
                     checked = itemValue,
-                    title = "Enable Haptic Feedback" + if (itemValue == def) "" else " *",
+                    title = stringResource(R.string.enable_haptic_feedback) + if (itemValue == def) "" else " *",
                     leadingIcon = null,
                     onClick = { value ->
                         GeneralSettings.setValue("haptic_feedback", value)
@@ -708,7 +714,7 @@ fun ControllerSettings(
             }
 
             item {
-                PreferenceHeader(text = "Key Mappings")
+                PreferenceHeader(stringResource(R.string.key_mappings))
             }
 
             inputBindings.toList()
@@ -730,9 +736,8 @@ fun ControllerSettings(
                             ),
                             value = {
                                 PreferenceValue(
-                                    text = if (binding.first.toString().length > 4) "NONE" else KeyEvent.keyCodeToString(
-                                        binding.first
-                                    )
+                                    if (binding.first.toString().length > 4) stringResource(R.string.none)
+                                    else KeyEvent.keyCodeToString(binding.first)
                                 )
                             },
                             onClick = {
@@ -815,7 +820,7 @@ fun InputBindingDialog(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Perform Input",
+                text = stringResource(R.string.perform_input),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
@@ -835,7 +840,7 @@ fun InputBindingDialog(
                 onClick = onReset,
                 modifier = Modifier.align(Alignment.End)
             ) {
-                Text(text = "Reset")
+                Text(stringResource(R.string.reset))
             }
         }
     }

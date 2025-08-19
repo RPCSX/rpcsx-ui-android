@@ -111,7 +111,7 @@ class PrecompilerService : Service() {
         val installProgress =
             ProgressRepository.create(
                 this,
-                if (isFwInstall) "Firmware Installation" else "Package Installation"
+                if (isFwInstall) getString(R.string.firmware_installation) else getString(R.string.package_installation)
             ) { entry ->
                 if (entry.isFinished()) {
                     if (isFwInstall) {

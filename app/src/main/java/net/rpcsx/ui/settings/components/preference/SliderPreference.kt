@@ -20,9 +20,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import net.rpcsx.R
 import net.rpcsx.ui.common.ComposePreview
 import net.rpcsx.ui.settings.components.core.PreferenceIcon
 import net.rpcsx.ui.settings.components.core.PreferenceSubtitle
@@ -87,10 +89,10 @@ fun SliderPreference(
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isError,
-                        label = { Text("Value") },
+                        label = { Text(stringResource(R.string.value)) },
                         supportingText = {
                             if (isError) {
-                                Text("Value must be a multiple of step size $stepSize within ${valueRange.start} to ${valueRange.endInclusive}")
+                                Text(stringResource(R.string.slider_value_supporting, stepSize, valueRange.start, valueRange.endInclusive))
                             }
                         }
                     )
@@ -119,7 +121,7 @@ fun SliderPreference(
                     },
                     enabled = !isError
                 ) {
-                    Text("OK")
+                    Text(stringResource(android.R.string.ok))
                 }
             },
             dismissButton = {
@@ -128,7 +130,7 @@ fun SliderPreference(
                     tempValue = value
                     textValue = value.toInt().toString()
                 }) {
-                    Text("Cancel")
+                    Text(stringResource(android.R.string.cancel))
                 }
             }
         )

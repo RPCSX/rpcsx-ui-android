@@ -20,9 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import net.rpcsx.R
 import net.rpcsx.ui.settings.components.core.PreferenceSubtitle
 import net.rpcsx.ui.settings.components.preference.RegularPreference
 
@@ -67,7 +69,7 @@ fun UpdateChannelsScreen(
 
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }, topBar = {
         TopAppBar(
-            title = { Text(text = "Download Channels", fontWeight = FontWeight.Medium) },
+            title = { Text(text = stringResource(R.string.download_channels), fontWeight = FontWeight.Medium) },
             scrollBehavior = topBarScrollBehavior,
             navigationIcon = {
                 IconButton(
@@ -84,7 +86,7 @@ fun UpdateChannelsScreen(
                 .padding(16.dp)
         ) {
             RegularPreference(
-                title = "RPCSX UI Android Update Channel",
+                title = stringResource(R.string.ui_update_channel),
                 leadingIcon = null,
                 subtitle = { PreferenceSubtitle(text = prefs.getString("ui_channel", ReleaseUiChannel)!!) },
                 onClick = {
@@ -92,7 +94,7 @@ fun UpdateChannelsScreen(
                 })
 
             RegularPreference(
-                title = "RPCSX Download Channel",
+                title = stringResource(R.string.rpcsx_download_channel),
                 leadingIcon = null,
                 subtitle = { PreferenceSubtitle(text = prefs.getString("rpcsx_channel", ReleaseRpcsxChannel)!!) },
                 onClick = {
@@ -100,7 +102,7 @@ fun UpdateChannelsScreen(
                 })
 
             RegularPreference(
-                title = "GPU Driver Download Channel",
+                title = stringResource(R.string.driver_download_channel),
                 leadingIcon = null,
                 subtitle = { PreferenceSubtitle(text = prefs.getString("gpu_driver_channel", DefaultGpuDriverChannel)!!) },
                 onClick = {
