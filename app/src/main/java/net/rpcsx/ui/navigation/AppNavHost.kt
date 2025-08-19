@@ -34,6 +34,8 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -45,6 +47,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -95,7 +98,6 @@ import net.rpcsx.ui.games.GamesScreen
 import net.rpcsx.ui.settings.AdvancedSettingsScreen
 import net.rpcsx.ui.settings.ControllerSettings
 import net.rpcsx.ui.settings.SettingsScreen
-import net.rpcsx.ui.settings.components.preference.SingleSelectionDialog
 import net.rpcsx.ui.user.UsersScreen
 import net.rpcsx.utils.FileUtil
 import net.rpcsx.utils.RpcsxUpdater
@@ -425,16 +427,35 @@ fun AppNavHost() {
                 },
                 isDeletable = { isValidChannel(it, ReleaseRpcsxChannel, DevRpcsxChannel) },
                 actions = {
-                    SingleSelectionDialog(
-                        currentValue = downloadArch,
-                        values = listOf("armv8-a", "armv8.1-a", "armv8.2-a", "armv8.4-a", "armv8.5-a", "armv9-a", "armv9.1-a"),
-                        title = "",
-                        icon = null,
-                        onValueChange = { value ->
-                            RpcsxUpdater.setArch(value)
-                            downloadArch = value
+                    var expanded by remember { mutableStateOf(false) }
+
+                    TextButton(onClick = { expanded = true }) {
+                        Text(downloadArch)
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        listOf(
+                            "armv8-a",
+                            "armv8.1-a",
+                            "armv8.2-a",
+                            "armv8.4-a",
+                            "armv8.5-a",
+                            "armv9-a",
+                            "armv9.1-a",
+                        ).forEach { arch ->
+                            DropdownMenuItem(
+                                text = { Text(arch) },
+                                onClick = {
+                                    RpcsxUpdater.setArch(arch)
+                                    downloadArch = arch
+                                    expanded = false
+                                }
+                            )
                         }
-                    )
+                    }
                 }
             )
         }
