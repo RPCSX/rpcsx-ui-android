@@ -103,6 +103,7 @@ fun SliderPreference(
                             onValueChange = { newValue ->
                                 tempValue = newValue
                                 textValue = newValue.toInt().toString()
+                                isError = false
                             },
                             valueRange = valueRange,
                             steps = steps,
@@ -127,6 +128,7 @@ fun SliderPreference(
             dismissButton = {
                 TextButton(onClick = { 
                     showDialog = false
+                    isError = false
                     tempValue = value
                     textValue = value.toInt().toString()
                 }) {

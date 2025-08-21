@@ -95,6 +95,7 @@ import net.rpcsx.utils.InputBindingPrefs
 import net.rpcsx.utils.RpcsxUpdater
 import org.json.JSONObject
 import java.io.File
+import kotlin.math.ceil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -337,7 +338,7 @@ fun AdvancedSettingsScreen(
                                         value = itemValue.toFloat(),
                                         valueRange = min.toFloat()..max.toFloat(),
                                         title = key + if (itemValue == def) "" else " *",
-                                        steps = (max - min).toInt(),
+                                        steps = (max - min).toInt() - 1,
                                         onValueChange = { value ->
                                             if (!RPCSX.instance.settingsSet(
                                                     itemPath, value.toLong().toString()
@@ -398,7 +399,7 @@ fun AdvancedSettingsScreen(
                                         value = itemValue.toFloat(),
                                         valueRange = min.toFloat()..max.toFloat(),
                                         title = key + if (itemValue == def) "" else " *",
-                                        steps = (max - min + 1).toInt(),
+                                        steps = ceil(max - min).toInt() - 1,
                                         onValueChange = { value ->
                                             if (!RPCSX.instance.settingsSet(
                                                     itemPath, value.toString()
