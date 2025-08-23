@@ -97,6 +97,7 @@ class ProgressRepository {
                 setCategory(NotificationCompat.CATEGORY_SERVICE)
                 setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 setProgress(0, 0, true)
+                setOngoing(true)
                 setSilent(true)
             }
 
