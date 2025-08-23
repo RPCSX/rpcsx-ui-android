@@ -57,12 +57,13 @@
     <string name="fetching">正在提取…</string>
     <string name="install">安装</string>
     <string name="installing">正在安装…</string>
-    <string name="please_wait">请稍后</string>
+    <string name="please_wait">请稍候</string>
     <string name="select_driver">选择一个 GPU 驱动程序</string>
 
     <!-- MainActivity -->
-    <string name="failed_to_load_new_version">加载新版本失败，之前的版本已恢复</string>
+    <string name="failed_to_load_new_version">加载新版本失败，之前的版本已恢复。</string>
     <string name="failed_to_update_rpcsx">更新 RPCSX 失败</string>
+    <string name="installation_progress">安装进度</string>
 
     <!-- OverlayEditActivity -->
     <string name="ask_if_reset_button">重置 %1$s？</string>
