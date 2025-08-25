@@ -63,8 +63,9 @@
     <string name="select_driver">Select a GPU Driver</string>
 
     <!-- MainActivity -->
-    <string name="failed_to_load_new_version">Failed to load new version, previous version was restored</string>
+    <string name="failed_to_load_new_version">Failed to load new version, previous version was restored.</string>
     <string name="failed_to_update_rpcsx">Failed to update RPCSX</string>
+    <string name="installation_progress">Installation progress</string>
 
     <!-- OverlayEditActivity -->
     <string name="ask_if_reset_button">Reset %1$s?</string>
@@ -94,7 +95,7 @@
     <string name="controls_description">Configure controller</string>
     <string name="custom_driver">Custom GPU Driver</string>
     <string name="custom_driver_description">Install alternative drivers for potentially better performance or accuracy</string>
-    <string name="custom_driver_not_supported">Custom driver not supported</string>
+    <string name="custom_driver_not_supported">Custom Driver Not Supported</string>
     <string name="custom_driver_not_supported_description">Custom driver loading isn\'t currently supported for this device.</string>
     <string name="download_channels">Download Channels</string>
     <string name="enable_haptic_feedback">Enable Haptic Feedback</string>

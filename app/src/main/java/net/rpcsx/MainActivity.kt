@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
             with(getSystemService(NOTIFICATION_SERVICE) as NotificationManager) {
                 val channel = NotificationChannel(
                     "rpcsx-progress",
-                    "Installation progress",
+                    getString(R.string.installation_progress),
                     NotificationManager.IMPORTANCE_DEFAULT
                 ).apply {
                     setShowBadge(false)
