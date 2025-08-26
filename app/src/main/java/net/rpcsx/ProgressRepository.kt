@@ -127,8 +127,11 @@ class ProgressRepository {
                             notificationManager.notify(requestId.toInt(), builder.build())
                         }
                     } else if (value < 0) {
-                        val contentText = text ?: "Installation failed"
+                        val contentText = text ?: context.getString(R.string.unexpected_error)
                         builder.setContentText(contentText)
+                            .setPriority(NotificationCompat.PRIORITY_HIGH)
+                            .setProgress(0, 0, false)
+                            .setOngoing(false)
                         AlertDialogQueue.showDialog(title, contentText)
                         notificationManager.notify(requestId.toInt(), builder.build())
                     } else {
