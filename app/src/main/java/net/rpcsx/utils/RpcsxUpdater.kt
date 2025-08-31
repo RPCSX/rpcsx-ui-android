@@ -2,6 +2,7 @@ package net.rpcsx.utils
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -40,8 +41,13 @@ object RpcsxUpdater {
         return "$version-$arch"
     }
 
+    fun getAbi(): String = Build.SUPPORTED_64_BIT_ABIS[0]
+
     fun getArch(): String {
-        return GeneralSettings["rpcsx_arch"] as? String ?: "armv8-a"
+        return when (getAbi()) {
+            "x86_64" -> "x86-64"
+            else -> GeneralSettings["rpcsx_arch"] as? String ?: "armv8-a"
+        }
     }
 
     fun setArch(arch: String) {
@@ -57,7 +63,7 @@ object RpcsxUpdater {
                 val release = fetchResult.content as GitHub.Release
                 val releaseVersion = "${release.name}-${arch}"
 
-                if (release.assets.find { it.name == "librpcsx-android-arm64-v8a-${arch}.so" }?.browser_download_url == null) {
+                if (release.assets.find { it.name == "librpcsx-android-${getAbi()}-${arch}.so" }?.browser_download_url == null) {
                     return null
                 }
 
@@ -85,7 +91,7 @@ object RpcsxUpdater {
             is GitHub.FetchResult.Success<*> -> {
                 val release = fetchResult.content as GitHub.Release
                 val releaseVersion = "${release.name}-${arch}"
-                val releaseAsset = release.assets.find { it.name == "librpcsx-android-arm64-v8a-$arch.so" }
+                val releaseAsset = release.assets.find { it.name == "librpcsx-android-${getAbi()}-$arch.so" }
 
                 if (releaseVersion != getCurrentVersion() && releaseAsset?.browser_download_url != null) {
                     val target = File(destinationDir, "librpcsx-android_${arch}_${release.name}.so")

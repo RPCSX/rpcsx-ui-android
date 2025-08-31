@@ -368,7 +368,6 @@ fun AppNavHost() {
         composable(
             route = "rpcsx_channels"
         ) {
-            var downloadArch by remember { mutableStateOf(RpcsxUpdater.getArch()) }
             UpdateChannelListScreen(
                 navigateBack = navController::navigateUp,
                 title = stringResource(R.string.rpcsx_download_channel),
@@ -426,7 +425,11 @@ fun AppNavHost() {
                     }
                 },
                 isDeletable = { isValidChannel(it, ReleaseRpcsxChannel, DevRpcsxChannel) },
-                actions = {
+                actions = actions@{
+                    if (RpcsxUpdater.getAbi() != "arm64-v8a") {
+                        return@actions
+                    }
+                    var downloadArch by remember { mutableStateOf(RpcsxUpdater.getArch()) }
                     var expanded by remember { mutableStateOf(false) }
 
                     TextButton(onClick = { expanded = true }) {

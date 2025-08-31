@@ -286,6 +286,7 @@ Java_net_rpcsx_RPCSX_getVersion(JNIEnv *env, jobject) {
 extern "C" JNIEXPORT jboolean JNICALL
 Java_net_rpcsx_RPCSX_setCustomDriver(JNIEnv *env, jobject, jstring jpath,
                                      jstring jlibraryName, jstring jhookDir) {
+#ifdef __aarch64__
   if (rpcsxLib.setCustomDriver == nullptr) {
     return false;
   }
@@ -318,4 +319,7 @@ Java_net_rpcsx_RPCSX_setCustomDriver(JNIEnv *env, jobject, jstring jpath,
   }
 
   return true;
+#else
+  return false;
+#endif // __aarch64__
 }
