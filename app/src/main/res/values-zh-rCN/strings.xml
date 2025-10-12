@@ -14,7 +14,7 @@
     <string name="device_info">设备信息</string>
     <string name="driver_download_channel">GPU 驱动程序下载渠道</string>
     <string name="edit_overlay">编辑虚拟按键</string>
-    <string name="firmware_version">固件：</string>
+    <string name="firmware">固件</string>
     <string name="rpcsx_download_channel">RPCSX 下载渠道</string>
     <string name="settings">设置</string>
     <string name="ui_update_channel">RPCSX UI Android 更新渠道</string>
@@ -69,7 +69,7 @@
     <string name="ask_if_reset_button">重置 %1$s？</string>
     <string name="ask_if_reset_button_description">您确定要重置 %1$s 吗？</string>
     <string name="control_panel">控制面板</string>
-    <string name="editing">正在编辑：</string>
+    <string name="editing">正在编辑</string>
     <string name="opacity">不透明度</string>
     <string name="scale">大小比例</string>
 
@@ -85,7 +85,7 @@
     <string name="restart_ui_to_apply_change">重启 RPCSX UI 以应用更改</string>
 
     <!-- SettingsScreen -->
-    <string name="active_user">当前用户：</string>
+    <string name="active_user">当前用户</string>
     <string name="advanced_settings">高级设置</string>
     <string name="advanced_settings_description">配置模拟器高级设置</string>
     <string name="ask_if_reset_key">您想要将 ‘%1$s’ 重置回默认值吗？</string>

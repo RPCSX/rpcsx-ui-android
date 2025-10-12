@@ -536,7 +536,7 @@ fun SettingsScreen(
             ) {
                 HomePreference(
                     title = stringResource(R.string.users),
-                    description = stringResource(R.string.active_user) + UserRepository.getUsername(activeUser),
+                    description = "${stringResource(R.string.active_user)}: ${UserRepository.getUsername(activeUser)}",
                     icon = {
                         PreferenceIcon(icon = Icons.Default.Person)
                     },

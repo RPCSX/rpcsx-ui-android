@@ -276,7 +276,7 @@ fun ControlPanel(
             Spacer(modifier = Modifier.height(5.dp))
             
             Text(
-                text = stringResource(R.string.editing) + currentButtonName,
+                text = "${stringResource(R.string.editing)}: $currentButtonName",
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )

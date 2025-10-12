@@ -16,7 +16,7 @@
     <string name="device_info">Device Info</string>
     <string name="driver_download_channel">GPU Driver Download Channel</string>
     <string name="edit_overlay">Edit Overlay</string>
-    <string name="firmware_version">Firmware: </string>
+    <string name="firmware">Firmware</string>
     <string name="rpcsx_download_channel">RPCSX Download Channel</string>
     <string name="settings">Settings</string>
     <string name="ui_update_channel">RPCSX UI Android Update Channel</string>
@@ -71,7 +71,7 @@
     <string name="ask_if_reset_button">Reset %1$s?</string>
     <string name="ask_if_reset_button_description">Are you sure you want to reset %1$s?</string>
     <string name="control_panel">Control Panel</string>
-    <string name="editing">Editing: </string>
+    <string name="editing">Editing</string>
     <string name="opacity">Opacity</string>
     <string name="scale">Scale</string>
 
@@ -87,7 +87,7 @@
     <string name="restart_ui_to_apply_change">Restart RPCSX UI to apply change</string>
 
     <!-- SettingsScreen -->
-    <string name="active_user">Active User: </string>
+    <string name="active_user">Active User</string>
     <string name="advanced_settings">Advanced Settings</string>
     <string name="advanced_settings_description">Configure emulator advanced settings</string>
     <string name="ask_if_reset_key">"Do you want to reset '%1$s' to its default value?"</string>

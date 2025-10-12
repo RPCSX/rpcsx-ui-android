@@ -539,7 +539,9 @@ fun GamesDestination(
                     NavigationDrawerItem(
                         label = {
                             Text(
-                                stringResource(R.string.firmware_version) + (FirmwareRepository.version.value ?: stringResource(R.string.none))
+                                "${stringResource(R.string.firmware)}: ${
+                                    FirmwareRepository.version.value ?: stringResource(R.string.none)
+                                }"
                             )
                         },
                         selected = false,
@@ -641,11 +643,26 @@ fun GamesDestination(
                         selected = false,
                         icon = { Icon(Icons.Outlined.Info, contentDescription = null) },
                         onClick = {
+                            val versionInfo = "UI: ${BuildConfig.Version}\nRPCSX: ${RpcsxUpdater.getCurrentVersion()}"
                             AlertDialogQueue.showDialog(
-                                "RPCSX UI Android",
-                                "UI: ${BuildConfig.Version}\nRPCSX: ${RpcsxUpdater.getCurrentVersion()}",
+                                title = "RPCSX UI Android",
+                                message = versionInfo,
                                 confirmText = context.getString(android.R.string.copy),
                                 dismissText = context.getString(R.string.close),
+                                onConfirm = {
+                                    val clipboard =
+                                        context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText(
+                                        context.getString(R.string.about),
+                                        versionInfo
+                                    )
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.copied_to_clipboard),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                             )
                         }
                     )
