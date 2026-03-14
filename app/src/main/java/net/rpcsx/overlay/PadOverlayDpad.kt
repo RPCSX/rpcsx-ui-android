@@ -5,12 +5,11 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.view.MotionEvent
-import androidx.core.content.edit
 import androidx.core.graphics.drawable.toDrawable
-import kotlin.math.roundToInt
 import net.rpcsx.utils.GeneralSettings
 import net.rpcsx.utils.GeneralSettings.boolean
 import net.rpcsx.utils.GeneralSettings.int
+import kotlin.math.roundToInt
 
 private enum class DpadButton(val bit: Int) {
     Top(1 shl 0), Left(1 shl 1), Right(1 shl 2), Bottom(1 shl 3);

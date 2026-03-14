@@ -1,6 +1,5 @@
 package net.rpcsx.ui.drivers
 
-import android.content.Context
 import android.content.res.Configuration
 import android.net.Uri
 import android.util.Log
@@ -65,7 +64,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -75,9 +73,9 @@ import net.rpcsx.dialogs.AlertDialogQueue
 import net.rpcsx.ui.channels.DefaultGpuDriverChannel
 import net.rpcsx.ui.settings.components.core.DeletableListItem
 import net.rpcsx.utils.DriversFetcher
-import net.rpcsx.utils.GitHub
 import net.rpcsx.utils.GeneralSettings
 import net.rpcsx.utils.GeneralSettings.string
+import net.rpcsx.utils.GitHub
 import net.rpcsx.utils.GpuDriverHelper
 import net.rpcsx.utils.GpuDriverInstallResult
 import java.io.File

@@ -25,7 +25,7 @@ import net.rpcsx.ui.settings.components.core.PreferenceTitle
 fun RegularPreference(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    leadingIcon: @Composable (() -> Unit) = {},
+    leadingIcon: @Composable (() -> Unit)? = null,
     subtitle: @Composable (() -> Unit)? = null,
     value: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,

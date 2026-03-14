@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import kotlin.concurrent.thread
 
 class GraphicsFrame : SurfaceView, SurfaceHolder.Callback {
     constructor(context: Context) : super(context) {

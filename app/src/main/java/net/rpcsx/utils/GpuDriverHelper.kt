@@ -111,7 +111,7 @@ object GpuDriverHelper {
         // Check that the driver metadata is valid
         val driverMetadata = try {
             GpuDriverMetadata.deserialize(metadataFile)
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             cleanup()
             return GpuDriverInstallResult.InvalidMetadata
         }
@@ -144,7 +144,7 @@ object GpuDriverHelper {
         val metadataFile = File(driverDir, GPU_DRIVER_META_FILE)
         return try {
             GpuDriverMetadata.deserialize(metadataFile).libraryName
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Log.w(
                 TAG,
                 "Failed to load library name for driver ${driverLabel}, driver may not exist or have invalid metadata"
