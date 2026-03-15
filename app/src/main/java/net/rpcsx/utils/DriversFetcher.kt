@@ -10,7 +10,7 @@ object DriversFetcher {
         val isValid = bypassValidation || withContext(Dispatchers.IO) {
             try {
                 GitHub.get("${GitHub.apiServer}repos/${repoUrl.removePrefix(GitHub.server)}/contents/.adrenoDrivers") is GitHub.GetResult.Success
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 false
             }
         }

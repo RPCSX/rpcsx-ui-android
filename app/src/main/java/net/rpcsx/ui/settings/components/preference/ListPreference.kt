@@ -43,7 +43,7 @@ fun <T> SingleSelectionDialog(
     values: List<T>,
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
-    icon: @Composable () -> Unit = {},
+    icon: @Composable (() -> Unit)? = null,
     currentValue: T? = null,
     enabled: Boolean = true,
     subtitle: @Composable (() -> Unit)? = null,
@@ -126,7 +126,7 @@ fun <T> SingleSelectionDialog(
 ) {
     SingleSelectionDialog(
         title = { PreferenceTitle(title = title) },
-        icon = { PreferenceIcon(icon = icon) },
+        icon = icon?.let { { PreferenceIcon(icon = it) } },
         currentValue = currentValue,
         onValueChange = onValueChange,
         values = values,

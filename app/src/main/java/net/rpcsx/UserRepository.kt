@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.core.text.isDigitsOnly
 import net.rpcsx.utils.GeneralSettings
 import java.io.File
-import kotlin.concurrent.thread
 
 data class User(
     val userId: String,

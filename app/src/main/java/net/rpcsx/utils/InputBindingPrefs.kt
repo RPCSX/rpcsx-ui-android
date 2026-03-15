@@ -1,10 +1,9 @@
 
 package net.rpcsx.utils
 
-import android.content.Context
 import android.view.KeyEvent
-import net.rpcsx.Digital2Flags
 import net.rpcsx.Digital1Flags
+import net.rpcsx.Digital2Flags
 import org.json.JSONObject
 
 object InputBindingPrefs {
@@ -37,7 +36,7 @@ object InputBindingPrefs {
             }
 
             GeneralSettings.setValue("input_bindings", json.toString())
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             return false
         }
         return true

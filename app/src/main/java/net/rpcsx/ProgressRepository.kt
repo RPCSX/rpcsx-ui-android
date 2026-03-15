@@ -12,7 +12,6 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import net.rpcsx.R
 import net.rpcsx.dialogs.AlertDialogQueue
 import java.util.concurrent.ConcurrentHashMap
 
