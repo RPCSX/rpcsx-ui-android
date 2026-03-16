@@ -110,7 +110,7 @@
     <string name="no_activity_to_handle_action">No activity found to handle this action</string>
     <string name="perform_input">Perform Input</string>
     <string name="reset_setting">Reset Setting</string>
-    <string name="search_settings">Search Settings…</string>
+    <string name="search">Search</string>
     <string name="share_log">Share Log</string>
     <string name="share_log_description">Share RPCSX\'s log file to help debug issues</string>
     <string name="users">Users</string>

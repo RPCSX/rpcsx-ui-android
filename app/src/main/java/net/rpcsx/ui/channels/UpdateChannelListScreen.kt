@@ -135,10 +135,8 @@ fun UpdateChannelListScreen(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .clickable {
-                                    onSelect(item)
-                                },
+                                .padding(vertical = 4.dp),
+                            onClick = { onSelect(item) },
                             colors = CardDefaults.cardColors(
                                 containerColor = if (item == selected) {
                                     MaterialTheme.colorScheme.primaryContainer

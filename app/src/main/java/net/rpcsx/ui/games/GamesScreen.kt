@@ -45,6 +45,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -367,6 +368,8 @@ fun GamesScreen() {
 
     val gameInProgress = games.find { it.progressList.isNotEmpty() }
 
+    var updatesChecked by rememberSaveable { mutableStateOf(false) }
+
     val checkForUpdates = suspend {
         rpcsxUpdateVersion = RpcsxUpdater.checkForUpdate()
         uiUpdateVersion = UiUpdater.checkForUpdate(context)
@@ -377,7 +380,10 @@ fun GamesScreen() {
     }
 
     LaunchedEffect(Unit) {
-        checkForUpdates()
+        if (!updatesChecked) {
+            updatesChecked = true
+            checkForUpdates()
+        }
     }
 
     if (uiUpdateVersion != null && rpcsxUpdateVersion == null && activeDialogs.isEmpty()) {

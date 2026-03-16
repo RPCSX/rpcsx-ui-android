@@ -56,6 +56,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -112,6 +113,13 @@ fun AppNavHost() {
     val scope = rememberCoroutineScope()
     val prefs = remember { context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
     val rpcsxLibrary by remember { RPCSX.activeLibrary }
+
+    val navigateTo: (String) -> Unit = { route ->
+        navController.navigate(route) {
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
     var gpuDriverChannelList =
         prefs.getStringSet("gpu_driver_channel_list", setOf(DefaultGpuDriverChannel))?.toList()
@@ -187,7 +195,7 @@ fun AppNavHost() {
             route = "games"
         ) {
             GamesDestination(
-                navigateToSettings = { navController.navigate("settings") },
+                navigateToSettings = { navigateTo("settings") },
                 drawerState
             )
         }
@@ -219,7 +227,7 @@ fun AppNavHost() {
                 ) {
                     AdvancedSettingsScreen(
                         navigateBack = navController::navigateUp,
-                        navigateTo = navController::navigate,
+                        navigateTo = navigateTo,
                         settings = elemObject,
                         path = elemPath
                     )
@@ -234,7 +242,7 @@ fun AppNavHost() {
         ) {
             AdvancedSettingsScreen(
                 navigateBack = navController::navigateUp,
-                navigateTo = navController::navigate,
+                navigateTo = navigateTo,
                 settings = settings.value,
             )
         }
@@ -244,7 +252,7 @@ fun AppNavHost() {
         ) {
             SettingsScreen(
                 navigateBack = navController::navigateUp,
-                navigateTo = navController::navigate,
+                navigateTo = navigateTo,
                 onRefresh = refreshSettings
             )
         }
@@ -270,7 +278,7 @@ fun AppNavHost() {
         ) {
             UpdateChannelsScreen(
                 navigateBack = navController::navigateUp,
-                navigateTo = navController::navigate,
+                navigateTo = navigateTo,
             )
         }
 

@@ -81,7 +81,7 @@ fun UpdateChannelsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp)
+                //.padding(16.dp)
         ) {
             RegularPreference(
                 title = stringResource(R.string.ui_update_channel),
