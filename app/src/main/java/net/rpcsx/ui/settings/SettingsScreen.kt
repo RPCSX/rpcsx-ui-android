@@ -137,69 +137,79 @@ fun AdvancedSettingsScreen(
     Scaffold(
         modifier = Modifier
             .nestedScroll(topBarScrollBehavior.nestedScrollConnection)
-            .then(modifier), topBar = {
+            .then(modifier),
+        topBar = {
             val titlePath = path.replace("@@", " / ").removePrefix(" / ")
-            LargeTopAppBar(title = {
-                if (isSearching) {
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            color = MaterialTheme.colorScheme.onSurface, fontSize = 20.sp
-                        ),
-                        decorationBox = { innerTextField ->
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(
-                                        MaterialTheme.colorScheme.surfaceVariant,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .padding(8.dp)
-                            ) {
-                                if (searchQuery.isEmpty()) {
-                                    Text(
-                                        text = stringResource(R.string.search_settings),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+            LargeTopAppBar(
+                title = {
+                    if (isSearching) {
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp),
+                            singleLine = true,
+                            textStyle = TextStyle(
+                                color = MaterialTheme.colorScheme.onSurface, fontSize = 20.sp
+                            ),
+                            decorationBox = { innerTextField ->
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(
+                                            MaterialTheme.colorScheme.surfaceVariant,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .padding(8.dp)
+                                ) {
+                                    if (searchQuery.isEmpty()) {
+                                        Text(
+                                            text = stringResource(R.string.search),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    innerTextField()
                                 }
-                                innerTextField()
+                            })
+                    } else {
+                        Text(
+                            text = titlePath.ifEmpty { stringResource(R.string.advanced_settings) },
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                },
+                scrollBehavior = topBarScrollBehavior,
+                navigationIcon = {
+                    IconButton(
+                        onClick = navigateBack,
+                        modifier = Modifier.padding(0.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
+                            contentDescription = null
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            if (isSearching) {
+                                searchQuery = ""
+                                isSearching = false
+                            } else {
+                                isSearching = true
                             }
-                        })
-                } else {
-                    Text(
-                        text = titlePath.ifEmpty { stringResource(R.string.advanced_settings) },
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }, scrollBehavior = topBarScrollBehavior, navigationIcon = {
-                IconButton(onClick = navigateBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                        contentDescription = null
-                    )
-                }
-            }, actions = {
-                IconButton(
-                    onClick = {
-                        if (isSearching) {
-                            searchQuery = ""
-                            isSearching = false
-                        } else {
-                            isSearching = true
-                        }
-                    }) {
-                    Icon(
-                        imageVector = if (isSearching) Icons.Default.Close else Icons.Default.Search,
-                        contentDescription = if (isSearching) "Close Search" else "Search"
-                    )
-                }
-            })
-        }) { contentPadding ->
+                        }) {
+                        Icon(
+                            imageVector = if (isSearching) Icons.Default.Close else Icons.Default.Search,
+                            contentDescription = if (isSearching) "Close Search" else "Search"
+                        )
+                    }
+                },
+            )
+        }
+    ) { contentPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -667,16 +677,16 @@ fun ControllerSettings(
             )
         }
     ) { contentPadding ->
-        val context = LocalContext.current
+        //val context = LocalContext.current
         val inputBindings = remember {
             mutableStateMapOf<Int, Pair<Int, Int>>().apply {
                 putAll(InputBindingPrefs.loadBindings())
             }
         }
 
-        var showDialog by remember { mutableStateOf<Boolean>(false) }
-        var currentInput by remember { mutableStateOf<Int>(-1) }
-        var currentInputName by remember { mutableStateOf<String>("") }
+        var showDialog by remember { mutableStateOf(false) }
+        var currentInput by remember { mutableStateOf(-1) }
+        var currentInputName by remember { mutableStateOf("") }
         val requester = remember { FocusRequester() }
 
         LazyColumn(
@@ -757,7 +767,7 @@ fun ControllerSettings(
         if (showDialog) {
             InputBindingDialog(
                 onReset = {
-                    InputBindingPrefs.defaultBindings.forEach { it ->
+                    InputBindingPrefs.defaultBindings.forEach {
                         if (InputBindingPrefs.rpcsxKeyCodeToString(
                                 it.value.first,
                                 it.value.second
