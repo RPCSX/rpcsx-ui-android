@@ -108,7 +108,6 @@
     <string name="no_activity_to_handle_action">未找到处理此操作的活动</string>
     <string name="perform_input">执行输入</string>
     <string name="reset_setting">重置设置</string>
-    <string name="search_settings">搜索设置…</string>
     <string name="share_log">分享日志</string>
     <string name="share_log_description">分享 RPCSX 的日志文件以帮助调试问题</string>
     <string name="users">用户</string>
