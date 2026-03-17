@@ -199,7 +199,7 @@ fun AdvancedSettingsScreen(
                                             query = searchQuery,
                                             onQueryChange = { searchQuery = it },
                                             onSearch = { expanded = false },
-                                            placeholder = { Text("Search settings") },
+                                            placeholder = { Text(stringResource(R.string.search)) },
                                             leadingIcon = {
                                                 Icon(Icons.Default.Search, null)
                                             },
