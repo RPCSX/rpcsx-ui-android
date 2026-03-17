@@ -8,25 +8,31 @@ import android.view.KeyEvent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Close
@@ -39,12 +45,16 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -66,7 +76,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -112,6 +121,30 @@ fun AdvancedSettingsScreen(
     var isSearching by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
+    val filteredKeys = remember(searchQuery, settings, isSearching, path) {
+        if (!isSearching || searchQuery.isBlank()) {
+            settings.keys().asSequence().mapNotNull { key ->
+                val obj = settingValue.value[key] as? JSONObject
+                val itemPath = "$path@@$key"
+                if (obj != null) itemPath to obj else null
+            }.toList()
+        } else {
+            buildList {
+                settings.keys().forEach { parentKey ->
+                    val parentObj = settings[parentKey] as? JSONObject ?: return@forEach
+
+                    parentObj.keys().forEach { childKey ->
+                        val childObj = parentObj[childKey] as? JSONObject ?: return@forEach
+
+                        if (childKey.contains(searchQuery, ignoreCase = true)) {
+                            val itemPath = "$parentKey@@$childKey"
+                            add(itemPath to childObj)
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     val installRpcsxLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -142,41 +175,57 @@ fun AdvancedSettingsScreen(
             val titlePath = path.replace("@@", " / ").removePrefix(" / ")
             LargeTopAppBar(
                 title = {
-                    if (isSearching) {
-                        BasicTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp),
-                            singleLine = true,
-                            textStyle = TextStyle(
-                                color = MaterialTheme.colorScheme.onSurface, fontSize = 20.sp
-                            ),
-                            decorationBox = { innerTextField ->
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(
-                                            MaterialTheme.colorScheme.surfaceVariant,
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .padding(8.dp)
-                                ) {
-                                    if (searchQuery.isEmpty()) {
-                                        Text(
-                                            text = stringResource(R.string.search),
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    AnimatedContent(
+                        targetState = isSearching,
+                        transitionSpec = {
+                            fadeIn(tween(220)) + slideInVertically { -it / 2 } togetherWith
+                                    fadeOut(tween(150)) + slideOutVertically { -it / 2 }
+                        },
+                        label = "SearchTransition"
+                    ) { searching ->
+                        if (searching) {
+                            var expanded by remember { mutableStateOf(false) }
+
+                            CompositionLocalProvider(
+                                LocalTextStyle provides MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp)
+                            ) {
+                                SearchBar(
+                                    expanded = expanded,
+                                    onExpandedChange = {},
+                                    modifier = Modifier.fillMaxWidth().animateContentSize(),
+                                    windowInsets = WindowInsets(0, 0, 0, 0),
+                                    inputField = {
+                                        SearchBarDefaults.InputField(
+                                            query = searchQuery,
+                                            onQueryChange = { searchQuery = it },
+                                            onSearch = { expanded = false },
+                                            placeholder = { Text(stringResource(R.string.search)) },
+                                            leadingIcon = {
+                                                Icon(Icons.Default.Search, null)
+                                            },
+                                            trailingIcon = {
+                                                IconButton(onClick = {
+                                                    if (searchQuery.isNotEmpty()) {
+                                                        searchQuery = ""
+                                                    } else {
+                                                        isSearching = false
+                                                    }
+                                                }) {
+                                                    Icon(Icons.Default.Close, null)
+                                                }
+                                            },
+                                            expanded = expanded,
+                                            onExpandedChange = {}
                                         )
                                     }
-                                    innerTextField()
-                                }
-                            })
-                    } else {
-                        Text(
-                            text = titlePath.ifEmpty { stringResource(R.string.advanced_settings) },
-                            fontWeight = FontWeight.Medium
-                        )
+                                ) {}
+                            }
+                        } else {
+                            Text(
+                                text = titlePath.ifEmpty { stringResource(R.string.advanced_settings) },
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
                     }
                 },
                 scrollBehavior = topBarScrollBehavior,
@@ -192,19 +241,15 @@ fun AdvancedSettingsScreen(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = {
-                            if (isSearching) {
-                                searchQuery = ""
-                                isSearching = false
-                            } else {
-                                isSearching = true
-                            }
-                        }) {
-                        Icon(
-                            imageVector = if (isSearching) Icons.Default.Close else Icons.Default.Search,
-                            contentDescription = if (isSearching) "Close Search" else "Search"
-                        )
+                    if (!isSearching) {
+                        IconButton(
+                            onClick = { isSearching = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search"
+                            )
+                        }
                     }
                 },
             )
@@ -215,54 +260,176 @@ fun AdvancedSettingsScreen(
                 .fillMaxSize()
                 .padding(contentPadding),
         ) {
-            val filteredKeys =
-                settings.keys().asSequence().filter { it.contains(searchQuery, ignoreCase = true) }
-                    .toList()
+            items(filteredKeys, key = { it.first }) { (itemPath, itemObject) ->
+                val key = itemPath.substringAfterLast("@@")
+                if (itemObject != null) {
+                    when (val type =
+                        if (itemObject.has("type")) itemObject.getString("type") else null) {
+                        null -> {
+                            RegularPreference(
+                                title = key, leadingIcon = null, onClick = {
+                                    Log.e(
+                                        "Main",
+                                        "Navigate to settings$itemPath, object $itemObject"
+                                    )
+                                    navigateTo("settings$itemPath")
+                                }
+                            )
+                        }
 
-            filteredKeys.forEach { key ->
-                val itemPath = "$path@@$key"
-                item(key = key) {
-                    val itemObject = settingValue.value[key] as? JSONObject
-
-                    if (itemObject != null) {
-                        when (val type =
-                            if (itemObject.has("type")) itemObject.getString("type") else null) {
-                            null -> {
-                                RegularPreference(
-                                    title = key, leadingIcon = null, onClick = {
-                                        Log.e(
-                                            "Main",
-                                            "Navigate to settings$itemPath, object $itemObject"
+                        "bool" -> {
+                            var itemValue by remember { mutableStateOf(itemObject.getBoolean("value")) }
+                            val def = itemObject.getBoolean("default")
+                            SwitchPreference(
+                                checked = itemValue,
+                                title = key + if (itemValue == def) "" else " *",
+                                leadingIcon = null,
+                                onClick = { value ->
+                                    if (!RPCSX.instance.settingsSet(
+                                            itemPath, if (value) "true" else "false"
                                         )
-                                        navigateTo("settings$itemPath")
-                                    })
+                                    ) {
+                                        AlertDialogQueue.showDialog(
+                                            context.getString(R.string.error),
+                                            context.getString(
+                                                R.string.failed_to_assign_value,
+                                                value.toString(),
+                                                itemPath
+                                            )
+                                        )
+                                    } else {
+                                        itemObject.put("value", value)
+                                        itemValue = value
+                                    }
+                                },
+                                onLongClick = {
+                                    AlertDialogQueue.showDialog(
+                                        title = context.getString(R.string.reset_setting),
+                                        message = context.getString(R.string.ask_if_reset_key, key),
+                                        onConfirm = {
+                                            if (RPCSX.instance.settingsSet(
+                                                    itemPath, def.toString()
+                                                )
+                                            ) {
+                                                itemObject.put("value", def)
+                                                itemValue = def
+                                            } else {
+                                                AlertDialogQueue.showDialog(
+                                                    context.getString(R.string.error),
+                                                    context.getString(
+                                                        R.string.failed_to_reset_key,
+                                                        key
+                                                    )
+                                                )
+                                            }
+                                        })
+                                })
+                        }
+
+                        "enum" -> {
+                            var itemValue by remember { mutableStateOf(itemObject.getString("value")) }
+                            val def = itemObject.getString("default")
+                            val variantsJson = itemObject.getJSONArray("variants")
+                            val variants = ArrayList<String>()
+                            for (i in 0..<variantsJson.length()) {
+                                variants.add(variantsJson.getString(i))
                             }
 
-                            "bool" -> {
-                                var itemValue by remember { mutableStateOf(itemObject.getBoolean("value")) }
-                                val def = itemObject.getBoolean("default")
-                                SwitchPreference(
-                                    checked = itemValue,
+                            SingleSelectionDialog(
+                                currentValue = if (itemValue in variants) itemValue else variants[0],
+                                values = variants,
+                                icon = null,
+                                title = key + if (itemValue == def) "" else " *",
+                                onValueChange = { value ->
+                                    if (!RPCSX.instance.settingsSet(
+                                            itemPath, "\"" + value + "\""
+                                        )
+                                    ) {
+                                        AlertDialogQueue.showDialog(
+                                            context.getString(R.string.error),
+                                            context.getString(
+                                                R.string.failed_to_assign_value,
+                                                value,
+                                                itemPath
+                                            )
+                                        )
+                                    } else {
+                                        itemObject.put("value", value)
+                                        itemValue = value
+                                    }
+                                },
+                                onLongClick = {
+                                    AlertDialogQueue.showDialog(
+                                        title = context.getString(R.string.reset_setting),
+                                        message = context.getString(R.string.ask_if_reset_key, key),
+                                        onConfirm = {
+                                            if (RPCSX.instance.settingsSet(
+                                                    itemPath, "\"" + def + "\""
+                                                )
+                                            ) {
+                                                itemObject.put("value", def)
+                                                itemValue = def
+                                            } else {
+                                                AlertDialogQueue.showDialog(
+                                                    context.getString(R.string.error),
+                                                    context.getString(
+                                                        R.string.failed_to_reset_key,
+                                                        key
+                                                    )
+                                                )
+                                            }
+                                        })
+                                })
+                        }
+
+                        "uint", "int" -> {
+                            var max = 0L
+                            var min = 0L
+                            var initialItemValue = 0L
+                            var def = 0L
+                            try {
+                                initialItemValue = itemObject.getString("value").toLong()
+                                max = itemObject.getString("max").toLong()
+                                min = itemObject.getString("min").toLong()
+                                def = itemObject.getString("default").toLong()
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                            var itemValue by remember { mutableLongStateOf(initialItemValue) }
+                            if (min < max) {
+                                SliderPreference(
+                                    value = itemValue.toFloat(),
+                                    valueRange = min.toFloat()..max.toFloat(),
                                     title = key + if (itemValue == def) "" else " *",
-                                    leadingIcon = null,
-                                    onClick = { value ->
+                                    steps = (max - min).toInt() - 1,
+                                    onValueChange = { value ->
                                         if (!RPCSX.instance.settingsSet(
-                                                itemPath, if (value) "true" else "false"
+                                                itemPath, value.toLong().toString()
                                             )
                                         ) {
                                             AlertDialogQueue.showDialog(
                                                 context.getString(R.string.error),
-                                                context.getString(R.string.failed_to_assign_value, value.toString(), itemPath)
+                                                context.getString(
+                                                    R.string.failed_to_assign_value,
+                                                    value.toString(),
+                                                    itemPath
+                                                )
                                             )
                                         } else {
-                                            itemObject.put("value", value)
-                                            itemValue = value
+                                            itemObject.put(
+                                                "value", value.toLong().toString()
+                                            )
+                                            itemValue = value.toLong()
                                         }
                                     },
+                                    valueContent = { PreferenceValue(text = itemValue.toString()) },
                                     onLongClick = {
                                         AlertDialogQueue.showDialog(
                                             title = context.getString(R.string.reset_setting),
-                                            message = context.getString(R.string.ask_if_reset_key, key),
+                                            message = context.getString(
+                                                R.string.ask_if_reset_key,
+                                                key
+                                            ),
                                             onConfirm = {
                                                 if (RPCSX.instance.settingsSet(
                                                         itemPath, def.toString()
@@ -273,48 +440,68 @@ fun AdvancedSettingsScreen(
                                                 } else {
                                                     AlertDialogQueue.showDialog(
                                                         context.getString(R.string.error),
-                                                        context.getString(R.string.failed_to_reset_key, key)
+                                                        context.getString(
+                                                            R.string.failed_to_reset_key,
+                                                            key
+                                                        )
                                                     )
                                                 }
                                             })
                                     })
                             }
+                        }
 
-                            "enum" -> {
-                                var itemValue by remember { mutableStateOf(itemObject.getString("value")) }
-                                val def = itemObject.getString("default")
-                                val variantsJson = itemObject.getJSONArray("variants")
-                                val variants = ArrayList<String>()
-                                for (i in 0..<variantsJson.length()) {
-                                    variants.add(variantsJson.getString(i))
-                                }
+                        "float" -> {
+                            var itemValue by remember {
+                                mutableDoubleStateOf(
+                                    itemObject.getString(
+                                        "value"
+                                    ).toDouble()
+                                )
+                            }
+                            val max = if (itemObject.has("max")) itemObject.getString("max")
+                                .toDouble() else 0.0
+                            val min = if (itemObject.has("min")) itemObject.getString("min")
+                                .toDouble() else 0.0
+                            val def =
+                                if (itemObject.has("default")) itemObject.getString("default")
+                                    .toDouble() else 0.0
 
-                                SingleSelectionDialog(
-                                    currentValue = if (itemValue in variants) itemValue else variants[0],
-                                    values = variants,
-                                    icon = null,
+                            if (min < max) {
+                                SliderPreference(
+                                    value = itemValue.toFloat(),
+                                    valueRange = min.toFloat()..max.toFloat(),
                                     title = key + if (itemValue == def) "" else " *",
+                                    steps = ceil(max - min).toInt() - 1,
                                     onValueChange = { value ->
                                         if (!RPCSX.instance.settingsSet(
-                                                itemPath, "\"" + value + "\""
+                                                itemPath, value.toString()
                                             )
                                         ) {
                                             AlertDialogQueue.showDialog(
                                                 context.getString(R.string.error),
-                                                context.getString(R.string.failed_to_assign_value, value, itemPath)
+                                                context.getString(
+                                                    R.string.failed_to_assign_value,
+                                                    value.toString(),
+                                                    itemPath
+                                                )
                                             )
                                         } else {
-                                            itemObject.put("value", value)
-                                            itemValue = value
+                                            itemObject.put("value", value.toDouble().toString())
+                                            itemValue = value.toDouble()
                                         }
                                     },
+                                    valueContent = { PreferenceValue(text = itemValue.toString()) },
                                     onLongClick = {
                                         AlertDialogQueue.showDialog(
                                             title = context.getString(R.string.reset_setting),
-                                            message = context.getString(R.string.ask_if_reset_key, key),
+                                            message = context.getString(
+                                                R.string.ask_if_reset_key,
+                                                key
+                                            ),
                                             onConfirm = {
                                                 if (RPCSX.instance.settingsSet(
-                                                        itemPath, "\"" + def + "\""
+                                                        itemPath, def.toString()
                                                     )
                                                 ) {
                                                     itemObject.put("value", def)
@@ -322,134 +509,19 @@ fun AdvancedSettingsScreen(
                                                 } else {
                                                     AlertDialogQueue.showDialog(
                                                         context.getString(R.string.error),
-                                                        context.getString(R.string.failed_to_reset_key, key)
+                                                        context.getString(
+                                                            R.string.failed_to_reset_key,
+                                                            key
+                                                        )
                                                     )
                                                 }
                                             })
                                     })
                             }
+                        }
 
-                            "uint", "int" -> {
-                                var max = 0L
-                                var min = 0L
-                                var initialItemValue = 0L
-                                var def = 0L
-                                try {
-                                    initialItemValue = itemObject.getString("value").toLong()
-                                    max = itemObject.getString("max").toLong()
-                                    min = itemObject.getString("min").toLong()
-                                    def = itemObject.getString("default").toLong()
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                }
-                                var itemValue by remember { mutableLongStateOf(initialItemValue) }
-                                if (min < max) {
-                                    SliderPreference(
-                                        value = itemValue.toFloat(),
-                                        valueRange = min.toFloat()..max.toFloat(),
-                                        title = key + if (itemValue == def) "" else " *",
-                                        steps = (max - min).toInt() - 1,
-                                        onValueChange = { value ->
-                                            if (!RPCSX.instance.settingsSet(
-                                                    itemPath, value.toLong().toString()
-                                                )
-                                            ) {
-                                                AlertDialogQueue.showDialog(
-                                                    context.getString(R.string.error),
-                                                    context.getString(R.string.failed_to_assign_value, value.toString(), itemPath)
-                                                )
-                                            } else {
-                                                itemObject.put(
-                                                    "value", value.toLong().toString()
-                                                )
-                                                itemValue = value.toLong()
-                                            }
-                                        },
-                                        valueContent = { PreferenceValue(text = itemValue.toString()) },
-                                        onLongClick = {
-                                            AlertDialogQueue.showDialog(
-                                                title = context.getString(R.string.reset_setting),
-                                                message = context.getString(R.string.ask_if_reset_key, key),
-                                                onConfirm = {
-                                                    if (RPCSX.instance.settingsSet(
-                                                            itemPath, def.toString()
-                                                        )
-                                                    ) {
-                                                        itemObject.put("value", def)
-                                                        itemValue = def
-                                                    } else {
-                                                        AlertDialogQueue.showDialog(
-                                                            context.getString(R.string.error),
-                                                            context.getString(R.string.failed_to_reset_key, key)
-                                                        )
-                                                    }
-                                                })
-                                        })
-                                }
-                            }
-
-                            "float" -> {
-                                var itemValue by remember {
-                                    mutableDoubleStateOf(
-                                        itemObject.getString(
-                                            "value"
-                                        ).toDouble()
-                                    )
-                                }
-                                val max = if (itemObject.has("max")) itemObject.getString("max")
-                                    .toDouble() else 0.0
-                                val min = if (itemObject.has("min")) itemObject.getString("min")
-                                    .toDouble() else 0.0
-                                val def =
-                                    if (itemObject.has("default")) itemObject.getString("default")
-                                        .toDouble() else 0.0
-
-                                if (min < max) {
-                                    SliderPreference(
-                                        value = itemValue.toFloat(),
-                                        valueRange = min.toFloat()..max.toFloat(),
-                                        title = key + if (itemValue == def) "" else " *",
-                                        steps = ceil(max - min).toInt() - 1,
-                                        onValueChange = { value ->
-                                            if (!RPCSX.instance.settingsSet(
-                                                    itemPath, value.toString()
-                                                )
-                                            ) {
-                                                AlertDialogQueue.showDialog(
-                                                    context.getString(R.string.error),
-                                                    context.getString(R.string.failed_to_assign_value, value.toString(), itemPath)
-                                                )
-                                            } else {
-                                                itemObject.put("value", value.toDouble().toString())
-                                                itemValue = value.toDouble()
-                                            }
-                                        },
-                                        valueContent = { PreferenceValue(text = itemValue.toString()) },
-                                        onLongClick = {
-                                            AlertDialogQueue.showDialog(
-                                                title = context.getString(R.string.reset_setting),
-                                                message = context.getString(R.string.ask_if_reset_key, key),
-                                                onConfirm = {
-                                                    if (RPCSX.instance.settingsSet(
-                                                            itemPath, def.toString()
-                                                        )
-                                                    ) {
-                                                        itemObject.put("value", def)
-                                                        itemValue = def
-                                                    } else {
-                                                        AlertDialogQueue.showDialog(
-                                                            context.getString(R.string.error),
-                                                            context.getString(R.string.failed_to_reset_key, key)
-                                                        )
-                                                    }
-                                                })
-                                        })
-                                }
-                            }
-
-                            else -> {
-                                Log.e("Main", "Unimplemented setting type $type")
-                            }
+                        else -> {
+                            Log.e("Main", "Unimplemented setting type $type")
                         }
                     }
                 }
