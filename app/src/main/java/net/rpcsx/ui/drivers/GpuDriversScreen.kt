@@ -22,9 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -61,6 +58,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -173,7 +171,7 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
                 IconButton(
                     onClick = navigateBack
                 ) {
-                    Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft, null)
+                    Icon(painter = painterResource(id = R.drawable.ic_keyboard_arrow_left), null)
                 }
             })
     }) { paddingValues ->
@@ -268,7 +266,7 @@ fun GpuDriversScreen(navigateBack: () -> Unit) {
                             Text(stringResource(R.string.installing))
                         } else {
                             Icon(
-                                imageVector = Icons.Default.Add,
+                                painter = painterResource(id = R.drawable.ic_add),
                                 contentDescription = "Install Driver"
                             )
                         }

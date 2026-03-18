@@ -3,9 +3,8 @@ package net.rpcsx.ui.settings.components.preference
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderColors
@@ -20,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -36,7 +36,7 @@ fun SliderPreference(
     onValueChange: (Float) -> Unit,
     title: String,
     modifier: Modifier = Modifier,
-    leadingIcon: ImageVector? = null,
+    leadingIcon: @Composable (() -> Unit)? = null,
     subtitle: String? = null,
     enabled: Boolean = true,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
@@ -59,7 +59,7 @@ fun SliderPreference(
     RegularPreference(
         modifier = modifier,
         title = { PreferenceTitle(title = title) },
-        leadingIcon = { PreferenceIcon(icon = leadingIcon) },
+        leadingIcon = leadingIcon,
         subtitle = { subtitle?.let { PreferenceSubtitle(text = it) } },
         enabled = enabled,
         onClick = { showDialog = true },
@@ -148,7 +148,7 @@ private fun SliderPreferencePreview() {
             value = value,
             onValueChange = { value = it },
             title = "Refresh Duration",
-            leadingIcon = Icons.Default.Refresh,
+            leadingIcon = { Icon(painterResource(id = R.drawable.ic_refresh), contentDescription = "Refresh") },
             subtitle = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit."
         )
     }
@@ -163,7 +163,7 @@ private fun SliderPreferenceDisabledPreview() {
             value = value,
             onValueChange = { value = it },
             title = "Refresh Duration",
-            leadingIcon = Icons.Default.Refresh,
+            leadingIcon = { Icon(painterResource(id = R.drawable.ic_refresh), contentDescription = "Refresh") },
             subtitle = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
             enabled = false
         )

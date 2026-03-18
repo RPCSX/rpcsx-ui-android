@@ -95,8 +95,8 @@ object GitHub {
         val request = Request.Builder().url(url).build()
         try {
             val response = client.newCall(request).execute()
-            val body = response.body?.string()
-            if (!response.isSuccessful || body == null) {
+            val body = response.body.string()
+            if (!response.isSuccessful) {
                 return@withContext GetResult.Error(response.code, response.message)
             }
 
@@ -177,11 +177,11 @@ object GitHub {
                         .build()
 
                     client.newCall(partRequest).execute().use { partResponse ->
-                        if (!partResponse.isSuccessful || partResponse.body == null) {
+                        if (!partResponse.isSuccessful) {
                             throw IOException("Part $i failed")
                         }
 
-                        val inputStream = partResponse.body!!.byteStream()
+                        val inputStream = partResponse.body.byteStream()
                         val raf = RandomAccessFile(destinationFile, "rw")
                         raf.seek(start)
 

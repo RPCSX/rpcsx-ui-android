@@ -1,10 +1,10 @@
 package net.rpcsx.ui.settings.components.preference
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -12,7 +12,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import net.rpcsx.R
 import net.rpcsx.ui.common.ComposePreview
 import net.rpcsx.ui.settings.components.core.PreferenceIcon
 import net.rpcsx.ui.settings.components.core.PreferenceSubtitle
@@ -78,9 +80,9 @@ private fun CheckboxPreferencePreview() {
         var isChecked by remember { mutableStateOf(true) }
         CheckboxPreference(
             checked = isChecked,
-            title = "Enable Something",
+            title = { Text("Enable Something") },
             subtitle = { PreferenceSubtitle(text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.") },
-            leadingIcon = Icons.Default.Build
+            leadingIcon = { Icon(painter = painterResource(id = R.drawable.ic_build), contentDescription = "Build") }
         ) { isChecked = it }
     }
 }
@@ -92,9 +94,9 @@ private fun CheckboxPreferenceDisabledPreview() {
         var isChecked by remember { mutableStateOf(false) }
         CheckboxPreference(
             checked = isChecked,
-            title = "Enable Something",
+            title = { Text("Enable Something") },
             subtitle = { PreferenceSubtitle(text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.") },
-            leadingIcon = Icons.Default.Build,
+            leadingIcon = { Icon(painter = painterResource(id = R.drawable.ic_build), contentDescription = "Build") },
             enabled = false
         ) { isChecked = it }
     }
