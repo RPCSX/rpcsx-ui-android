@@ -31,12 +31,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -173,7 +167,7 @@ fun OverlayEditScreen() {
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White
             ) {
-                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Open Control Panel")
+                Icon(painter = painterResource(id = R.drawable.ic_keyboard_arrow_down), contentDescription = "Open Control Panel")
             }
         }
 
@@ -275,7 +269,7 @@ fun ControlPanel(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = {}, modifier = Modifier.alpha(0f)) {
-                    Icon(Icons.Default.Close, contentDescription = "Disabled Button")
+                    Icon(painter = painterResource(id = R.drawable.ic_close), contentDescription = "Disabled Button")
                 }
                 Text(
                     text = stringResource(R.string.control_panel),
@@ -285,7 +279,7 @@ fun ControlPanel(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 IconButton(onClick = onCloseClick) {
-                    Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.error)
+                    Icon(painter = painterResource(id = R.drawable.ic_close), contentDescription = "Close", tint = MaterialTheme.colorScheme.error)
                 }
             }
 
@@ -310,7 +304,7 @@ fun ControlPanel(
             ) {
                 IconButton(onClick = onMoveUp) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowUp,
+                        painter = painterResource(id = R.drawable.ic_keyboard_arrow_up),
                         contentDescription = "Move Up",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -321,7 +315,7 @@ fun ControlPanel(
                 ) {
                     IconButton(onClick = onMoveLeft) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            painter = painterResource(id = R.drawable.ic_keyboard_arrow_left),
                             contentDescription = "Move Left",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -340,7 +334,7 @@ fun ControlPanel(
 
                     IconButton(onClick = onMoveRight) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            painter = painterResource(id = R.drawable.ic_keyboard_arrow_right),
                             contentDescription = "Move Right",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -349,7 +343,7 @@ fun ControlPanel(
 
                 IconButton(onClick = onMoveDown) {
                     Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
+                        painter = painterResource(id = R.drawable.ic_keyboard_arrow_down),
                         contentDescription = "Move Down",
                         tint = MaterialTheme.colorScheme.primary
                     )

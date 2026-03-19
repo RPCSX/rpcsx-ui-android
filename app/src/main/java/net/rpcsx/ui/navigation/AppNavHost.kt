@@ -26,11 +26,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
@@ -56,7 +51,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -593,7 +587,7 @@ fun GamesDestination(
                     NavigationDrawerItem(
                         label = { Text(stringResource(R.string.settings)) },
                         selected = false,
-                        icon = { Icon(Icons.Default.Settings, null) },
+                        icon = { Icon(painter = painterResource(id = R.drawable.ic_settings), null) },
                         onClick = navigateToSettings
                     )
 
@@ -649,7 +643,7 @@ fun GamesDestination(
                     NavigationDrawerItem(
                         label = { Text(stringResource(R.string.about)) },
                         selected = false,
-                        icon = { Icon(Icons.Outlined.Info, contentDescription = null) },
+                        icon = { Icon(painter = painterResource(id = R.drawable.ic_info), contentDescription = null) },
                         onClick = {
                             val versionInfo = "UI: ${BuildConfig.Version}\nRPCSX: ${RpcsxUpdater.getCurrentVersion()}"
                             AlertDialogQueue.showDialog(
@@ -705,7 +699,7 @@ fun GamesDestination(
                             }
                         }) {
                             Icon(
-                                imageVector = Icons.Filled.Menu,
+                                painter = painterResource(id = R.drawable.ic_menu),
                                 contentDescription = "Open menu"
                             )
                         }
@@ -781,7 +775,7 @@ fun DropUpFloatingActionButton(
             FloatingActionButton(
                 onClick = { expanded = !expanded }
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add")
+                Icon(painter = painterResource(id = R.drawable.ic_add), contentDescription = "Add")
             }
         }
     }

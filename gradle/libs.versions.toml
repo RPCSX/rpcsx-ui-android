@@ -1,25 +1,28 @@
 [versions]
-activityCompose = "1.10.1"
-agp = "8.9.1"
+activityCompose = "1.13.0"
+agp = "8.13.2"
 coilCompose = "3.1.0"
-kotlin = "2.1.10"
-coreKtx = "1.16.0"
+documentfile = "1.1.0"
+kotlin = "2.3.20"
+coreKtx = "1.18.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
-appcompat = "1.7.0"
-kotlinxSerializationJson = "1.8.0"
-squareupOkHttp3 = "4.12.0"
-material = "1.12.0"
+appcompat = "1.7.1"
+kotlinxSerializationJson = "1.10.0"
+squareupOkHttp3 = "5.3.2"
+material = "1.13.0"
 constraintlayout = "2.2.1"
-navigationCompose = "2.8.9"
-activity = "1.10.1"
+navigationCompose = "2.9.7"
+activity = "1.13.0"
 uiToolingPreviewAndroid = "1.7.8"
 uiTooling = "1.7.8"
+materialSwitch = "1.0.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 androidx-material3 = { module = "androidx.compose.material3:material3" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -34,6 +37,7 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
 androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
+com-github-ishan09811-materialswitch = { group = "com.github.Ishan09811", name = "materialswitch", version.ref = "materialSwitch" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

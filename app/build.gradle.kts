@@ -83,8 +83,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        }
     }
 
     externalNativeBuild {
@@ -115,7 +117,7 @@ base.archivesName = "rpcsx"
 dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.ui.tooling.preview.android)
-    val composeBom = platform("androidx.compose:compose-bom:2025.02.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.02.01")
     implementation(composeBom)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.core.ktx)
@@ -131,4 +133,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
     implementation(libs.squareup.okhttp3)
+    implementation(libs.androidx.documentfile)
+    implementation(libs.com.github.ishan09811.materialswitch)
 }

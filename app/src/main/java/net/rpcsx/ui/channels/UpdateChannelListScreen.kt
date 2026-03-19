@@ -1,6 +1,5 @@
 package net.rpcsx.ui.channels
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -108,7 +105,7 @@ fun UpdateChannelListScreen(
                 IconButton(
                     onClick = navigateBack
                 ) {
-                    Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft, null)
+                    Icon(painter = painterResource(id = R.drawable.ic_keyboard_arrow_left), null)
                 }
             },
             actions = actions
@@ -178,7 +175,7 @@ fun UpdateChannelListScreen(
                         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 4.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Add, contentDescription = "Add Source"
+                            painter = painterResource(id = R.drawable.ic_add), contentDescription = "Add Source"
                         )
                     }
                 }

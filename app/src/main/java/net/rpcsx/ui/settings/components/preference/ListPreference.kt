@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -26,11 +24,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.rpcsx.R
 import net.rpcsx.ui.common.ComposePreview
 import net.rpcsx.ui.settings.components.base.BaseDialogPreference
 import net.rpcsx.ui.settings.components.core.PreferenceIcon
@@ -208,7 +208,7 @@ private fun SingleSelectionDialogPreview() {
                 onValueChange = { currentValue = it },
                 values = (1..10).toList(),
                 title = { PreferenceTitle("Choose a number") },
-                icon = { PreferenceIcon(Icons.Default.Star) }
+                icon = { PreferenceIcon(painterResource(id = R.drawable.ic_star)) }
             )
         }
     }
@@ -229,7 +229,7 @@ private fun SingleSelectionDialogDisabledPreview() {
                 onValueChange = { currentValue = it },
                 values = (1..10).toList(),
                 title = { PreferenceTitle("Choose a number") },
-                icon = { PreferenceIcon(Icons.Default.Star) },
+                icon = { PreferenceIcon(painterResource(id = R.drawable.ic_star)) },
                 enabled = false
             )
         }

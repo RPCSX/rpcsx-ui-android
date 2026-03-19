@@ -33,12 +33,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -201,7 +195,7 @@ fun AdvancedSettingsScreen(
                                             onSearch = { expanded = false },
                                             placeholder = { Text(stringResource(R.string.search)) },
                                             leadingIcon = {
-                                                Icon(Icons.Default.Search, null)
+                                                Icon(painter = painterResource(id = R.drawable.ic_search), null)
                                             },
                                             trailingIcon = {
                                                 IconButton(onClick = {
@@ -211,7 +205,7 @@ fun AdvancedSettingsScreen(
                                                         isSearching = false
                                                     }
                                                 }) {
-                                                    Icon(Icons.Default.Close, null)
+                                                    Icon(painter = painterResource(id = R.drawable.ic_close), null)
                                                 }
                                             },
                                             expanded = expanded,
@@ -235,7 +229,7 @@ fun AdvancedSettingsScreen(
                         modifier = Modifier.padding(0.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
+                            painter = painterResource(id = R.drawable.ic_keyboard_arrow_left),
                             contentDescription = null
                         )
                     }
@@ -246,7 +240,7 @@ fun AdvancedSettingsScreen(
                             onClick = { isSearching = true }
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Search,
+                                painter = painterResource(id = R.drawable.ic_search),
                                 contentDescription = "Search"
                             )
                         }
@@ -563,7 +557,7 @@ fun SettingsScreen(
                     IconButton(
                         onClick = navigateBack
                     ) {
-                        Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft, null)
+                        Icon(painter = painterResource(id = R.drawable.ic_keyboard_arrow_left), null)
                     }
                 })
         }
@@ -620,7 +614,7 @@ fun SettingsScreen(
                     title = stringResource(R.string.users),
                     description = "${stringResource(R.string.active_user)}: ${UserRepository.getUsername(activeUser)}",
                     icon = {
-                        PreferenceIcon(icon = Icons.Default.Person)
+                        PreferenceIcon(icon = painterResource(id = R.drawable.ic_person))
                     },
                     onClick = {
                         navigateTo("users")
@@ -697,7 +691,7 @@ fun SettingsScreen(
             item(key = "share_logs") {
                 HomePreference(
                     title = stringResource(R.string.share_log),
-                    icon = { Icon(imageVector = Icons.Default.Share, contentDescription = null) },
+                    icon = { Icon(painter = painterResource(id = R.drawable.ic_share), contentDescription = null) },
                     description = stringResource(R.string.share_log_description),
                     onClick = {
                         val file = DocumentFile.fromSingleUri(
@@ -743,7 +737,7 @@ fun ControllerSettings(
                     IconButton(
                         onClick = navigateBack
                     ) {
-                        Icon(imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft, null)
+                        Icon(painter = painterResource(id = R.drawable.ic_keyboard_arrow_left), null)
                     }
                 }
             )

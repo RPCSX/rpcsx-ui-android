@@ -21,9 +21,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,6 +51,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -137,7 +135,7 @@ fun GameItem(game: Game) {
             if (game.progressList.isEmpty()) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.delete)) },
-                    leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
+                    leadingIcon = { Icon(painter = painterResource(id = R.drawable.ic_delete), contentDescription = null) },
                     onClick = {
                         menuExpanded.value = false
                         val deleteProgress = ProgressRepository.create(context, context.getString(R.string.deleting_game))
@@ -321,7 +319,7 @@ fun GameItem(game: Game) {
                             }) {
 
                             Icon(
-                                Icons.Outlined.Lock,
+                                painter = painterResource(id = R.drawable.ic_lock),
                                 contentDescription = "Game is locked",
                                 modifier = Modifier
                                     .size(30.dp)

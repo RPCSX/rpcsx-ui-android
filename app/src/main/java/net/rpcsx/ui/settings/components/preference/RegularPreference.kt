@@ -1,12 +1,13 @@
 package net.rpcsx.ui.settings.components.preference
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import net.rpcsx.R
 import net.rpcsx.ui.common.ComposePreview
 import net.rpcsx.ui.settings.components.base.BasePreference
 import net.rpcsx.ui.settings.components.core.PreferenceIcon
@@ -76,10 +77,10 @@ fun RegularPreference(
 private fun RegularPreferencePreview() {
     ComposePreview {
         RegularPreference(
-            title = "Install Firmware",
-            leadingIcon = Icons.Default.Settings,
+            title = { Text("Install Firmware") },
+            leadingIcon = { Icon(painterResource(id = R.drawable.ic_settings), contentDescription = "Settings") },
             subtitle = { PreferenceSubtitle(text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ullamcorper tempor imperdiet. Tempor magna proident pariatur nonumy iusto, sint laborum possim accumsan, elit nonummy facer enim autem eiusmod lobortis reprehenderit molestie vel esse aliquyam cupiditat velit nisi aliquid ipsum. Erat accusam reprehenderit. Feugiat aliquyam iure. Nisi ex officia.") },
-            trailingContent = { PreferenceIcon(icon = Icons.AutoMirrored.Default.KeyboardArrowRight) },
+            trailingContent = { PreferenceIcon(icon = painterResource(id = R.drawable.ic_keyboard_arrow_right)) },
             onClick = { }
         )
     }
@@ -90,10 +91,10 @@ private fun RegularPreferencePreview() {
 private fun RegularPreferenceDisabledPreview() {
     ComposePreview {
         RegularPreference(
-            title = "Advanced Settings",
-            leadingIcon = Icons.Default.Settings,
+            title = { Text("Advanced Settings") },
+            leadingIcon = { Icon(painterResource(id = R.drawable.ic_settings), contentDescription = "Settings") },
             subtitle = { PreferenceSubtitle(text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ullamcorper tempor imperdiet. Tempor magna proident pariatur nonumy iusto, sint laborum possim accumsan, elit nonummy facer enim autem eiusmod lobortis reprehenderit molestie vel esse aliquyam cupiditat velit nisi aliquid ipsum. Erat accusam reprehenderit. Feugiat aliquyam iure. Nisi ex officia.") },
-            trailingContent = { PreferenceIcon(icon = Icons.AutoMirrored.Default.KeyboardArrowRight) },
+            trailingContent = { PreferenceIcon(icon = painterResource(id = R.drawable.ic_keyboard_arrow_right)) },
             enabled = false,
             onClick = { }
         )
