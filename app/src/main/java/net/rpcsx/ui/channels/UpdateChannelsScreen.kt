@@ -20,10 +20,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import com.github.ishan09811.compose_preferences.core.PreferenceSubtitle
+import com.github.ishan09811.compose_preferences.preference.RegularPreference
 import net.rpcsx.R
-import net.rpcsx.ui.settings.components.core.PreferenceSubtitle
-import net.rpcsx.ui.settings.components.preference.RegularPreference
 
 const val DefaultGpuDriverChannel = "https://github.com/K11MCH1/AdrenoToolsDrivers"
 const val ReleaseUiChannel = "https://github.com/RPCSX/rpcsx-ui-android"
