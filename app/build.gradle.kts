@@ -109,5 +109,5 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.squareup.okhttp3)
     implementation(libs.androidx.documentfile)
-    implementation(libs.compose.preferences)
+    implementation(libs.materialswitch)
 }
