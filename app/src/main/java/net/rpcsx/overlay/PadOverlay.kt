@@ -70,7 +70,7 @@ class PadOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(context,
             (context?.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager)?.defaultVibrator 
         else context?.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator 
     }
-    private var selectedInput: PadOverlayItem? = null
+    var selectedInput: PadOverlayItem? = null
         set(value) {
             field = value
             onSelectedInputChange?.invoke(value)
