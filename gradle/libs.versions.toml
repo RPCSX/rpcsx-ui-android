@@ -1,6 +1,6 @@
 [versions]
 activityCompose = "1.13.0"
-agp = "8.13.2"
+agp = "9.2.1"
 coilCompose = "3.4.0"
 documentfile = "1.1.0"
 kotlin = "2.3.21"
