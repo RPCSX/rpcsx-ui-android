@@ -1,10 +1,8 @@
 package net.rpcsx.overlay
 
-import android.content.Context
-import android.graphics.PointF
 import android.os.Bundle
+import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,53 +13,22 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -70,12 +37,11 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.updateLayoutParams
 import net.rpcsx.R
 import net.rpcsx.RPCSXTheme
-import kotlin.math.roundToInt
 
 class OverlayEditActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableFullScreenImmersive(this)
+        enableFullScreenImmersive()
         setContent {
             RPCSXTheme {
                 OverlayEditScreen()
@@ -83,317 +49,86 @@ class OverlayEditActivity : ComponentActivity() {
         }
     }
 
-    private fun enableFullScreenImmersive(activity: ComponentActivity) {
-        val window = activity.window
+    private fun enableFullScreenImmersive() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
-    
-        val insetsController = WindowInsetsControllerCompat(window, window.decorView)
-        insetsController.apply {
+        WindowInsetsControllerCompat(window, window.decorView).apply {
             hide(WindowInsetsCompat.Type.systemBars())
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
-
-        val params = window.attributes
-        params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-        window.attributes = params
-    }
-}
-
-private fun applyInsetsToPadOverlay(padOverlay: PadOverlay) {
-    ViewCompat.setOnApplyWindowInsetsListener(padOverlay) { view, windowInsets ->
-        val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-        if (view.layoutParams is MarginLayoutParams) {
-            view.updateLayoutParams<MarginLayoutParams> {
-                leftMargin = insets.left
-                rightMargin = insets.right
-                topMargin = insets.top
-                bottomMargin = insets.bottom
-            }
+        window.attributes = window.attributes.apply {
+            layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
-        WindowInsetsCompat.CONSUMED
     }
 }
 
 @Composable
-fun OverlayEditScreen() {
-    var isPanelVisible by remember { mutableStateOf(true) }
-    var scaleValue by remember { mutableStateOf(50f) }
-    var opacityValue by remember { mutableStateOf(100f) }
-    var isEnabled by remember { mutableStateOf(true) }
-    var currentButtonName by remember { mutableStateOf("Everything") }
-    var showResetDialog by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    var padOverlay: PadOverlay? by remember { mutableStateOf(null) }
-
+fun OverlayEditScreen(
+    state: OverlayEditorState = rememberOverlayEditorState()
+) {
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
-            factory = { ctx: Context ->
-                PadOverlay(ctx, null).also { padOverlay = it }
-            },
-            update = { padOverlay = it }
-        )
+            factory = { ctx ->
+                PadOverlay(ctx, null).apply {
+                    layoutParams = ViewGroup.MarginLayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    applyWindowInsets(this)
+                    isEditing = true
+                    onSelectedInputChange = { input ->
+                        val buttonInfo = (input as? PadOverlayDpad)?.getInfo() ?: (input as? PadOverlayButton)?.getInfo()
+                        val inputEnabled = (input as? PadOverlayDpad)?.enabled ?: (input as? PadOverlayButton)?.enabled
 
-        padOverlay?.layoutParams = MarginLayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        padOverlay?.let { applyInsetsToPadOverlay(it) }
-        padOverlay?.isEditing = true
-
-        padOverlay?.onSelectedInputChange = { input ->
-            if (input != null) {
-                val info = (input as? PadOverlayDpad)?.getInfo() ?: (input as? PadOverlayButton)?.getInfo()
-                if (info != null) {
-                    currentButtonName = info.first.toString()
-                    scaleValue = info.second.toFloat()
-                    opacityValue = info.third.toFloat()
+                        val mappedInfo = buttonInfo?.let { Triple(
+                            it.first, it.second,
+                            it.third
+                        ) }
+                        state.onInputSelected(mappedInfo, inputEnabled)
+                    }
+                    state.padOverlay = this
                 }
-                val inputEnabled = (input as? PadOverlayDpad)?.enabled ?: (input as? PadOverlayButton)?.enabled
-                if (inputEnabled != null) {
-                    isEnabled = inputEnabled
-                }
-            } else {
-                currentButtonName = "Everything"
             }
-        }
+        )
 
-        if (!isPanelVisible) {
+        if (!state.isPanelVisible) {
             FloatingActionButton(
-                onClick = { isPanelVisible = true },
+                onClick = { state.isPanelVisible = true },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .padding(top = 20.dp),
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = Color.White
             ) {
-                Icon(painter = painterResource(id = R.drawable.ic_keyboard_arrow_down), contentDescription = "Open Control Panel")
+                Icon(painterResource(id = R.drawable.ic_keyboard_arrow_down), contentDescription = "Open Control Panel")
             }
         }
 
         AnimatedVisibility(
-            visible = isPanelVisible,
-            enter = fadeIn(animationSpec = tween(300)) + scaleIn(initialScale = 0.8f, animationSpec = tween(300)),
-            exit = fadeOut(animationSpec = tween(200)) + scaleOut(targetScale = 0.8f, animationSpec = tween(200))
+            visible = state.isPanelVisible,
+            enter = fadeIn(tween(300)) + scaleIn(initialScale = 0.8f, animationSpec = tween(300)),
+            exit = fadeOut(tween(200)) + scaleOut(targetScale = 0.8f, animationSpec = tween(200))
         ) {
-            ControlPanel(
-                scaleValue = scaleValue,
-                onScaleChange = { 
-                    scaleValue = it 
-                    padOverlay?.setButtonScale(it.roundToInt())
-                },
-                opacityValue = opacityValue,
-                onOpacityChange = { 
-                    opacityValue = it 
-                    padOverlay?.setButtonOpacity(it.roundToInt())
-                },
-                isEnabled = isEnabled,
-                onEnableChange = { 
-                    isEnabled = it 
-                    padOverlay?.enableButton(isEnabled)
-                },
-                currentButtonName = currentButtonName,
-                onResetClick = { showResetDialog = true },
-                onCloseClick = { isPanelVisible = false },
-                onMoveUp = { padOverlay?.moveButtonUp() },
-                onMoveRight = { padOverlay?.moveButtonRight() },
-                onMoveLeft = { padOverlay?.moveButtonLeft() },
-                onMoveDown = { padOverlay?.moveButtonDown() }
-            )
+            ControlPanel(state = state)
         }
 
-        if (showResetDialog) {
+        if (state.showResetDialog) {
             ResetDialog(
-                buttonName = currentButtonName,
-                onConfirm = { 
-                    showResetDialog = false
-                    padOverlay?.resetButtonConfigs() 
+                buttonName = state.currentButtonName,
+                onConfirm = {
+                    state.showResetDialog = false
+                    state.padOverlay?.resetButtonConfigs()
+
+                    val buttonInfo = (state.padOverlay?.selectedInput as? PadOverlayDpad)?.getInfo() ?: (state.padOverlay?.selectedInput as? PadOverlayButton)?.getInfo() ?: return@ResetDialog
+                    val inputEnabled = (state.padOverlay?.selectedInput as? PadOverlayDpad)?.enabled ?: (state.padOverlay?.selectedInput as? PadOverlayButton)?.enabled ?: return@ResetDialog
+
+                    state.scaleValue = buttonInfo.second.toFloat()
+                    state.opacityValue = buttonInfo.third.toFloat()
+                    state.isEnabled = inputEnabled
                 },
-                onDismiss = { showResetDialog = false }
+                onDismiss = { state.showResetDialog = false }
             )
         }
-    }
-}
-
-@Composable
-fun ControlPanel(
-    scaleValue: Float,
-    onScaleChange: (Float) -> Unit,
-    opacityValue: Float,
-    onOpacityChange: (Float) -> Unit,
-    isEnabled: Boolean,
-    onEnableChange: (Boolean) -> Unit,
-    currentButtonName: String,
-    onResetClick: () -> Unit,
-    onCloseClick: () -> Unit,
-    onMoveUp: () -> Unit,
-    onMoveRight: () -> Unit,
-    onMoveLeft: () -> Unit,
-    onMoveDown: () -> Unit
-) {
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp
-    val screenHeight = configuration.screenHeightDp
-
-    val panelWidth = 336f
-    val panelHeight = 200f
-    
-    var panelOffset by remember { 
-        mutableStateOf(
-            PointF(
-                (screenWidth / 2f - panelWidth / 2f), 
-                (screenHeight / 2f - panelHeight / 2f)
-            )
-        ) 
-    }
-
-    Box(
-        modifier = Modifier
-            .offset { IntOffset(panelOffset.x.toInt(), panelOffset.y.toInt()) }
-            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.88f), RoundedCornerShape(8.dp))
-            .padding(10.dp)
-            .width(336.dp)
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    panelOffset = PointF(panelOffset.x + dragAmount.x, panelOffset.y + dragAmount.y)
-                }
-            }
-    ) {
-        Column(
-            modifier = Modifier.padding(6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = {}, modifier = Modifier.alpha(0f)) {
-                    Icon(painter = painterResource(id = R.drawable.ic_close), contentDescription = "Disabled Button")
-                }
-                Text(
-                    text = stringResource(R.string.control_panel),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                IconButton(onClick = onCloseClick) {
-                    Icon(painter = painterResource(id = R.drawable.ic_close), contentDescription = "Close", tint = MaterialTheme.colorScheme.error)
-                }
-            }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(2.dp)
-                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), RoundedCornerShape(50))
-            )
-            Spacer(modifier = Modifier.height(5.dp))
-            
-            Text(
-                text = "${stringResource(R.string.editing)}: $currentButtonName",
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                IconButton(onClick = onMoveUp) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_keyboard_arrow_up),
-                        contentDescription = "Move Up",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onMoveLeft) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_keyboard_arrow_left),
-                            contentDescription = "Move Left",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Checkbox(
-                        checked = currentButtonName == "Everything" || isEnabled,
-                        enabled = currentButtonName != "Everything",
-                        onCheckedChange = onEnableChange,
-                        modifier = Modifier.padding(4.dp),
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = MaterialTheme.colorScheme.primary,
-                            uncheckedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                    )
-
-                    IconButton(onClick = onMoveRight) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_keyboard_arrow_right),
-                            contentDescription = "Move Right",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-
-                IconButton(onClick = onMoveDown) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_keyboard_arrow_down),
-                        contentDescription = "Move Down",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    if (currentButtonName != "Everything") {
-                        SliderComponent(stringResource(R.string.scale), scaleValue, onScaleChange)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        SliderComponent(stringResource(R.string.opacity), opacityValue, onOpacityChange)
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                IconButton(
-                    onClick = onResetClick,
-                    modifier = Modifier.size(40.dp),
-                    colors = IconButtonDefaults.filledTonalIconButtonColors()
-                ) {
-                    Icon(painter = painterResource(id = R.drawable.ic_restore), contentDescription = "Reset", tint = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SliderComponent(label: String, value: Float, onValueChange: (Float) -> Unit) {
-    Column(modifier = Modifier.clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {}) {
-        Text(text = "$label: ${value.roundToInt()}%", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = 0f..100f,
-            thumb = {
-                Box(
-                    modifier = Modifier
-                        .size(12.dp)
-                        .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
-                )
-            },
-            modifier = Modifier.padding(horizontal = 16.dp).height(20.dp)
-        )
     }
 }
 
@@ -416,8 +151,12 @@ fun ResetDialog(buttonName: String, onConfirm: () -> Unit, onDismiss: () -> Unit
     )
 }
 
-@Preview
-@Composable
-fun PreviewOverlayEditScreen() {
-    OverlayEditScreen()
+private fun applyWindowInsets(view: View) {
+    ViewCompat.setOnApplyWindowInsetsListener(view) { v, windowInsets ->
+        val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+        v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            setMargins(insets.left, insets.top, insets.right, insets.bottom)
+        }
+        WindowInsetsCompat.CONSUMED
+    }
 }

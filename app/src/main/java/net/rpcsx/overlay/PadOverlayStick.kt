@@ -6,10 +6,7 @@ import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.view.MotionEvent
 import androidx.core.graphics.drawable.toDrawable
-import kotlin.math.atan2
-import kotlin.math.cos
 import kotlin.math.hypot
-import kotlin.math.sin
 
 class PadOverlayStick(
     resources: Resources,
@@ -18,19 +15,28 @@ class PadOverlayStick(
     stick: Bitmap,
     private val pressDigitalIndex: Int = 0,
     private val pressBit: Int = 0
-) :
-    BitmapDrawable(resources, stick) {
-    private var bg = bg.toDrawable(resources)
+) : BitmapDrawable(resources, stick) {
+
+    companion object {
+        const val TOUCH_RESULT_HANDLED = 1
+        const val TOUCH_RESULT_IGNORED = 0
+        const val TOUCH_RESULT_RELEASED = -1
+
+        private const val CENTER_AXIS_VALUE = 127
+        private const val MAX_AXIS_OFFSET = 127
+        private const val AXIS_BIAS = 128
+    }
+
+    private val bgDrawable = bg.toDrawable(resources)
     private var locked = -1
     private var pressX = -1
     private var pressY = -1
     private var bgOffsetX = 0
     private var bgOffsetY = 0
-    fun contains(x: Int, y: Int) = bounds.contains(x, y)
 
-    fun isActive(): Boolean {
-        return locked != -1
-    }
+    fun contains(x: Int, y: Int): Boolean = bounds.contains(x, y)
+
+    fun isActive(): Boolean = locked != -1
 
     fun onAdd(event: MotionEvent, pointerIndex: Int) {
         locked = event.getPointerId(pointerIndex)
@@ -40,18 +46,18 @@ class PadOverlayStick(
         pressX = x
         pressY = y
 
-        setBounds(
-            x - bounds.width() / 2,
-            y - bounds.height() / 2,
-            x + bounds.width() / 2,
-            y + bounds.height() / 2,
-        )
+        val halfWidth = bounds.width() / 2
+        val halfHeight = bounds.height() / 2
+        setBounds(x - halfWidth, y - halfHeight, x + halfWidth, y + halfHeight)
     }
 
     fun onTouch(event: MotionEvent, pointerIndex: Int, padState: State): Int {
         val action = event.actionMasked
 
-        if ((pressBit != 0 && (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN)) || (locked != -1 && action == MotionEvent.ACTION_MOVE)) {
+        val isInitialPress = pressBit != 0 && (action == MotionEvent.ACTION_DOWN || action == MotionEvent.ACTION_POINTER_DOWN)
+        val isDragging = locked != -1 && action == MotionEvent.ACTION_MOVE
+
+        if (isInitialPress || isDragging) {
             var activePointerIndex = pointerIndex
 
             if (action != MotionEvent.ACTION_MOVE) {
@@ -59,16 +65,21 @@ class PadOverlayStick(
                     locked = event.getPointerId(pointerIndex)
                     pressX = event.getX(pointerIndex).toInt()
                     pressY = event.getY(pointerIndex).toInt()
-                    bgOffsetX = bg.bounds.centerX() - pressX
-                    bgOffsetY = bg.bounds.centerY() - pressY
 
-                    bg.setBounds(bg.bounds.left - bgOffsetX,bg.bounds.top - bgOffsetY, bg.bounds.right - bgOffsetX, bg.bounds.bottom - bgOffsetY)
+                    bgOffsetX = bgDrawable.bounds.centerX() - pressX
+                    bgOffsetY = bgDrawable.bounds.centerY() - pressY
+
+                    bgDrawable.setBounds(
+                        bgDrawable.bounds.left - bgOffsetX,
+                        bgDrawable.bounds.top - bgOffsetY,
+                        bgDrawable.bounds.right - bgOffsetX,
+                        bgDrawable.bounds.bottom - bgOffsetY
+                    )
                 } else if (locked != event.getPointerId(pointerIndex)) {
-                    return 0
+                    return TOUCH_RESULT_IGNORED
                 }
             } else {
-
-                for (i in 0..<event.pointerCount) {
+                for (i in 0 until event.pointerCount) {
                     if (locked == event.getPointerId(i)) {
                         activePointerIndex = i
                         break
@@ -76,97 +87,99 @@ class PadOverlayStick(
                 }
 
                 if (activePointerIndex == -1) {
-                    return 0
+                    return TOUCH_RESULT_IGNORED
                 }
             }
 
-            padState.digital[pressDigitalIndex] = padState.digital[pressDigitalIndex] or pressBit
+            if (pressBit != 0) {
+                padState.digital[pressDigitalIndex] = padState.digital[pressDigitalIndex] or pressBit
+            }
 
             val bgCenterX = pressX
             val bgCenterY = pressY
 
-            var x = event.getX(activePointerIndex)
-            var y = event.getY(activePointerIndex)
+            var relX = event.getX(activePointerIndex) - bgCenterX
+            var relY = event.getY(activePointerIndex) - bgCenterY
 
-            x -= bgCenterX
-            y -= bgCenterY
+            val bgR = hypot((bgDrawable.bounds.left - bgCenterX).toFloat(), (bgDrawable.bounds.top - bgCenterY).toFloat())
+            val stickR = hypot(relX, relY)
 
-            val bgR =
-                hypot((bg.bounds.left - bgCenterX).toFloat(), (bg.bounds.top - bgCenterY).toFloat())
-            val stickR = hypot(x, y)
-
-            if (stickR > bgR) {
-                val L = atan2(y, x)
-                x = bgR * cos(L)
-                y = bgR * sin(L)
+            if (stickR > bgR && stickR > 0f) {
+                val scaleFactor = bgR / stickR
+                relX *= scaleFactor
+                relY *= scaleFactor
             }
 
-            val stickX = ((x / bgR) * 127 + 128).toInt()
-            val stickY = ((y / bgR) * 127 + 128).toInt()
+            val stickAxisX = ((relX / bgR) * MAX_AXIS_OFFSET + AXIS_BIAS).toInt()
+            val stickAxisY = ((relY / bgR) * MAX_AXIS_OFFSET + AXIS_BIAS).toInt()
 
-            if (isLeft) {
-                padState.leftStickX = stickX
-                padState.leftStickY = stickY
-            } else {
-                padState.rightStickX = stickX
-                padState.rightStickY = stickY
-            }
+            updateStickAxis(padState, stickAxisX, stickAxisY)
 
-            x += bgCenterX
-            y += bgCenterY
+            val finalX = relX + bgCenterX
+            val finalY = relY + bgCenterY
+
+            val halfWidth = bounds.width() / 2
+            val halfHeight = bounds.height() / 2
 
             super.setBounds(
-                x.toInt() - bounds.width() / 2,
-                y.toInt() - bounds.height() / 2,
-                x.toInt() + bounds.width() / 2,
-                y.toInt() + bounds.height() / 2,
+                finalX.toInt() - halfWidth,
+                finalY.toInt() - halfHeight,
+                finalX.toInt() + halfWidth,
+                finalY.toInt() + halfHeight
             )
 
-            return 1
+            return TOUCH_RESULT_HANDLED
         }
 
         if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_CANCEL) {
-            if (locked != -1 && (action == MotionEvent.ACTION_CANCEL || event.getPointerId(
-                    pointerIndex
-                ) == locked)
-            ) {
+            if (locked != -1 && (action == MotionEvent.ACTION_CANCEL || event.getPointerId(pointerIndex) == locked)) {
                 locked = -1
 
-                bg.setBounds(bg.bounds.left + bgOffsetX,bg.bounds.top + bgOffsetY, bg.bounds.right + bgOffsetX, bg.bounds.bottom + bgOffsetY)
-                bgOffsetY = 0
+                bgDrawable.setBounds(
+                    bgDrawable.bounds.left + bgOffsetX,
+                    bgDrawable.bounds.top + bgOffsetY,
+                    bgDrawable.bounds.right + bgOffsetX,
+                    bgDrawable.bounds.bottom + bgOffsetY
+                )
                 bgOffsetX = 0
+                bgOffsetY = 0
 
-                padState.digital[pressDigitalIndex] =
-                    padState.digital[pressDigitalIndex] and pressBit.inv()
-
-                super.setBounds(bg.bounds)
-
-                if (isLeft) {
-                    padState.leftStickX = 127
-                    padState.leftStickY = 127
-                } else {
-                    padState.rightStickX = 127
-                    padState.rightStickY = 127
+                if (pressBit != 0) {
+                    padState.digital[pressDigitalIndex] = padState.digital[pressDigitalIndex] and pressBit.inv()
                 }
-                return -1
+
+                super.setBounds(bgDrawable.bounds)
+                updateStickAxis(padState, CENTER_AXIS_VALUE, CENTER_AXIS_VALUE)
+
+                return TOUCH_RESULT_RELEASED
             }
         }
 
-        return 0
+        return TOUCH_RESULT_IGNORED
+    }
+
+    private fun updateStickAxis(padState: State, x: Int, y: Int) {
+        if (isLeft) {
+            padState.leftStickX = x
+            padState.leftStickY = y
+        } else {
+            padState.rightStickX = x
+            padState.rightStickY = y
+        }
     }
 
     override fun setBounds(left: Int, top: Int, right: Int, bottom: Int) {
         super.setBounds(left, top, right, bottom)
-        bg.setBounds(left, top, right, bottom)
+        bgDrawable.setBounds(left, top, right, bottom)
     }
 
     override fun setAlpha(alpha: Int) {
         super.setAlpha(alpha)
-        bg.alpha = alpha
+        bgDrawable.alpha = alpha
     }
 
     override fun draw(canvas: Canvas) {
-        bg.draw(canvas)
+        bgDrawable.draw(canvas)
         super.draw(canvas)
     }
 }
