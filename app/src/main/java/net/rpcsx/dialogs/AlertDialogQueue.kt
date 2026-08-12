@@ -1,33 +1,34 @@
 
 package net.rpcsx.dialogs
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import net.rpcsx.RPCSXApplication
 
 object AlertDialogQueue {
     val dialogs = mutableStateListOf<DialogData>()
@@ -37,10 +38,32 @@ object AlertDialogQueue {
         message: String? = null,
         onConfirm: () -> Unit = {},
         onDismiss: (() -> Unit)? = null,
-        confirmText: String = "OK",    // auto -> android.R.string.ok
-        dismissText: String = "Cancel" // auto -> android.R.string.cancel
+        confirmText: String = "OK",
+        dismissText: String = "Cancel"
     ) {
         dialogs.add(DialogData(title, message, onConfirm, onDismiss, confirmText, dismissText))
+    }
+
+    fun showDialog(
+        @StringRes titleRes: Int,
+        @StringRes messageRes: Int? = null,
+        onConfirm: () -> Unit = {},
+        onDismiss: (() -> Unit)? = null,
+        @StringRes confirmTextRes: Int? = null,
+        @StringRes dismissTextRes: Int? = null
+    ) {
+        showDialog(
+            title = titleRes.asString(),
+            message = messageRes?.asString(),
+            onConfirm = onConfirm,
+            onDismiss = onDismiss,
+            confirmText = confirmTextRes?.asString() ?: "OK",
+            dismissText = dismissTextRes?.asString() ?: "Cancel"
+        )
+    }
+
+    fun Int.asString(): String {
+        return RPCSXApplication.context.getString(this)
     }
 
     private fun dismissDialog() {
