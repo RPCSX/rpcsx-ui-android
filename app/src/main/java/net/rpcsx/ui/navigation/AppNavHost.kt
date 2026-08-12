@@ -90,9 +90,9 @@ import net.rpcsx.ui.channels.uiTextToChannel
 import net.rpcsx.ui.channels.uiTextToChannels
 import net.rpcsx.ui.drivers.GpuDriversScreen
 import net.rpcsx.ui.games.GamesScreen
-import net.rpcsx.ui.settings.AdvancedSettingsScreen
-import net.rpcsx.ui.settings.ControllerSettings
-import net.rpcsx.ui.settings.SettingsScreen
+import net.rpcsx.ui.settings.main.AdvancedSettingsScreen
+import net.rpcsx.ui.settings.main.ControllerSettingsScreen
+import net.rpcsx.ui.settings.main.SettingsScreen
 import net.rpcsx.ui.user.UsersScreen
 import net.rpcsx.utils.FileUtil
 import net.rpcsx.utils.RpcsxUpdater
@@ -254,7 +254,7 @@ fun AppNavHost() {
         composable(
             route = "controls"
         ) {
-            ControllerSettings(
+            ControllerSettingsScreen(
                 navigateBack = navController::navigateUp
             )
         }
