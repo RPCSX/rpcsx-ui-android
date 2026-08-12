@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "net.rpcsx"
-    compileSdk = 36
+    compileSdk = 37
     ndkVersion = "29.0.13113456"
 
     defaultConfig {
