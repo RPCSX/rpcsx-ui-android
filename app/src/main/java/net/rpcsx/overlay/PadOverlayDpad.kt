@@ -78,6 +78,8 @@ class PadOverlayDpad(
             GeneralSettings.setValue(prefKey("enabled"), value)
         }
 
+    override fun scale() = GeneralSettings[prefKey("scale")].int(measureDefaultScale())
+
     init {
         loadSavedPosition()
     }

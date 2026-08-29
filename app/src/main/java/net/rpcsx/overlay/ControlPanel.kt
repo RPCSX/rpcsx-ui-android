@@ -108,25 +108,23 @@ fun ControlPanel(state: OverlayEditorState) {
 
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    if (state.currentButtonName != "Everything") {
-                        SliderComponent(
-                            label = stringResource(R.string.scale),
-                            value = state.scaleValue,
-                            onValueChange = {
-                                state.scaleValue = it
-                                state.padOverlay?.setButtonScale(it.roundToInt())
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        SliderComponent(
-                            label = stringResource(R.string.opacity),
-                            value = state.opacityValue,
-                            onValueChange = {
-                                state.opacityValue = it
-                                state.padOverlay?.setButtonOpacity(it.roundToInt())
-                            }
-                        )
-                    }
+                    SliderComponent(
+                        label = stringResource(R.string.scale),
+                        value = state.scaleValue,
+                        onValueChange = {
+                            state.scaleValue = it
+                            state.padOverlay?.setButtonScale(it.roundToInt())
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    SliderComponent(
+                        label = stringResource(R.string.opacity),
+                        value = state.opacityValue,
+                        onValueChange = {
+                            state.opacityValue = it
+                            state.padOverlay?.setButtonOpacity(it.roundToInt())
+                        }
+                    )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 IconButton(
@@ -152,8 +150,7 @@ private fun DirectionalControls(state: OverlayEditorState) {
                 Icon(painterResource(id = R.drawable.ic_keyboard_arrow_left), "Move Left", tint = MaterialTheme.colorScheme.primary)
             }
             Checkbox(
-                checked = state.currentButtonName == "Everything" || state.isEnabled,
-                enabled = state.currentButtonName != "Everything",
+                checked = state.isEnabled,
                 onCheckedChange = {
                     state.isEnabled = it
                     state.padOverlay?.enableButton(it)

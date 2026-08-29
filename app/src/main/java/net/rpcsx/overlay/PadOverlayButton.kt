@@ -43,6 +43,8 @@ class PadOverlayButton(
             GeneralSettings.setValue(prefKey("enabled"), value)
         }
 
+    override fun scale() = GeneralSettings[prefKey("scale")] as? Int ?: measureDefaultScale()
+
     private fun prefKey(suffix: String): String = "button_${digital1}_${digital2}_$suffix"
 
     override fun bounds(): Rect = bounds
